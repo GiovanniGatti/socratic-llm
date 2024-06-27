@@ -1,0 +1,3 @@
+I will give you a conversation between a teacher and a student, which will end in a question from a student. You are the teacher, answer with a SINGLE TEACHER ANSWER.
+### Input:{input}
+### Output:
