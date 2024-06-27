@@ -50,7 +50,7 @@ if __name__ == "__main__":
 
     client = OpenAI(api_key=args.openai_api_key)
 
-    evaluation = [{"prompt": item} for item in eval_prompts[:1]]
+    evaluation = [{"prompt": item} for item in eval_prompts]
 
     for element in tqdm(evaluation):
         prompt = element["prompt"]
