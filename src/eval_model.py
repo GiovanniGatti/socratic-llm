@@ -39,7 +39,6 @@ if __name__ == "__main__":
     parser.add_argument("--eval-prompt", required=True, type=pathlib.Path,
                         help="Path to the judge evaluation prompt")
     parser.add_argument("--openai-api-key", required=True, type=str, help="Open AI api key")
-    parser.add_argument("--peft-checkpoint", required=True, type=str, help="Path to checkpoint")
     parser.add_argument("--without-lora-adapter", action="store_true", help="Disable LoRA adapter (no finetuning)")
     parser.add_argument("--output", required=True, type=pathlib.Path, help="Path to GPT-4o eval")
     args = parser.parse_args()
@@ -53,7 +52,7 @@ if __name__ == "__main__":
     with open(args.input) as f:
         eval_prompts = json.load(f)
 
-    base_model = PeftConfig.from_pretrained(args.peft_checkpoint).base_model_name_or_path
+    base_model = PeftConfig.from_pretrained("giovanni-gatti-pinheiro/socratic-llm").base_model_name_or_path
 
     if args.without_lora_adapter:
         model = AutoModelForCausalLM.from_pretrained(
@@ -65,13 +64,13 @@ if __name__ == "__main__":
         tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     else:
         model = AutoPeftModelForCausalLM.from_pretrained(
-            args.peft_checkpoint,
+            "giovanni-gatti-pinheiro/socratic-llm",
             torch_dtype=torch.bfloat16,
             load_in_4bit=True,
             trust_remote_code=True,
         )
 
-        tokenizer = AutoTokenizer.from_pretrained(args.peft_checkpoint, trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained("giovanni-gatti-pinheiro/socratic-llm", trust_remote_code=True)
 
     evaluation = [{"prompt": item} for item in eval_prompts]
 
