@@ -10,3 +10,40 @@ dialogue, enhancing their educational value.
 
 This repository contains the source material for the paper "Fine Tuning a Large Language Model with DPO for
 the Socratic method."
+
+# Model inference
+
+You can access the model directly from
+HuggingFace [socratic-llm](https://huggingface.co/giovanni-gatti-pinheiro/socratic-llm).
+
+```python
+from peft import AutoPeftModelForCausalLM, PeftConfig
+import torch
+from transformers import AutoTokenizer
+
+base_model = PeftConfig.from_pretrained("giovanni-gatti-pinheiro/socratic-llm").base_model_name_or_path
+model = AutoPeftModelForCausalLM.from_pretrained(
+    "giovanni-gatti-pinheiro/socratic-llm",
+    torch_dtype=torch.bfloat16,
+    load_in_4bit=True,
+    trust_remote_code=True,
+)
+
+tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
+```
+
+Check HuggingFace's `transformers` library for more details.
+
+# Scripts
+
+We also make available evaluation scripts.
+
+ - `eval_gpt_4o.py`: Perform evaluation of `GPT-4o` and prompt engineering (requires an OpenAI API key)
+ - `eval_model.py`: Perform evaluation of the model with prompt engineering only or with the LoRA adapter
+
+For each script, check `--help` for more details.
+
+# Installing dependencies
+
+You can run evaluation scripts either with a Docker image (see `Dockerfile`) or by installing the project dependencies 
+with `requirements.txt`
