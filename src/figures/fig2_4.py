@@ -128,10 +128,10 @@ if __name__ == "__main__":
 
     data = {
         "score_components": score_components,
-        "humans": [round(human_scores.avg_questions(), 2), round(human_scores.avg_on_topic() / 5, 2),
-                   round(human_scores.avg_helpfulness() / 5, 2), round(human_scores.avg_reveal_answer(), 2)],
-        "gpt-4o": [round(gpt4o_scores.avg_questions(), 2), round(gpt4o_scores.avg_on_topic() / 5, 2),
-                   round(gpt4o_scores.avg_helpfulness() / 5, 2), round(gpt4o_scores.avg_reveal_answer(), 2)],
+        "humans": [human_scores.avg_questions(), human_scores.avg_on_topic(),
+                   human_scores.avg_helpfulness(), human_scores.avg_reveal_answer()],
+        "gpt-4o": [gpt4o_scores.avg_questions(), gpt4o_scores.avg_on_topic(),
+                   gpt4o_scores.avg_helpfulness(), gpt4o_scores.avg_reveal_answer()],
     }
 
     source = ColumnDataSource(data=data)

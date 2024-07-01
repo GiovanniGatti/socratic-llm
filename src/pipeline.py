@@ -19,22 +19,22 @@ if __name__ == "__main__":
         raise ValueError("Must provide OPENAI_API_KEY either through command line or environment variable")
 
     for dataset in ("mathdial", "debugging", "tutorchat"):
-        if args.use_cache and not Path(f"{args.evaluation_dir}/{dataset}_base.json").exists():
-            subprocess.run(["python", "-m", "eval_model",
-                            "--input", f"./datasets/{dataset}.json",
-                            "--inference-prompt", "./templates/inference.txt",
-                            "--eval-prompt", "./templates/judge_llm.txt",
-                            "--openai-api-key", OPENAI_API_KEY,
-                            "--output", f"{args.evaluation_dir}/{dataset}_base.json"])
-
         if args.use_cache and not Path(f"{args.evaluation_dir}/{dataset}_finetuned.json").exists():
             subprocess.run(["python", "-m", "eval_model",
                             "--input", f"./datasets/{dataset}.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--openai-api-key", OPENAI_API_KEY,
-                            "--without-lora-adapter",
                             "--output", f"{args.evaluation_dir}/{dataset}_finetuned.json"])
+
+        if args.use_cache and not Path(f"{args.evaluation_dir}/{dataset}_base.json").exists():
+            subprocess.run(["python", "-m", "eval_model",
+                            "--input", f"./datasets/{dataset}.json",
+                            "--inference-prompt", "./templates/inference.txt",
+                            "--eval-prompt", "./templates/judge_llm.txt",
+                            "--openai-api-key", OPENAI_API_KEY,
+                            "--without-lora-adapter",
+                            "--output", f"{args.evaluation_dir}/{dataset}_base.json"])
 
         if args.use_cache and not Path(f"{args.evaluation_dir}/{dataset}_gpt4o.json").exists():
             subprocess.run(["python", "-m", "eval_gpt_4o",

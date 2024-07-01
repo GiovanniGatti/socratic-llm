@@ -50,16 +50,16 @@ class Scores(RootModel):
         return self.root[item]
 
     def avg_summary_score(self) -> float:
-        return statistics.mean(e.evaluation.summary_score() for e in self.root)
+        return round(statistics.mean(e.evaluation.summary_score() for e in self.root), 2)
 
     def avg_questions(self) -> float:
-        return statistics.mean(e.evaluation.questions.lower().strip() == "yes" for e in self.root)
+        return round(statistics.mean(e.evaluation.questions.lower().strip() == "yes" for e in self.root), 2)
 
     def avg_on_topic(self) -> float:
-        return statistics.mean(e.evaluation.on_topic for e in self.root)
+        return round(statistics.mean(e.evaluation.on_topic for e in self.root) / 5, 2)
 
     def avg_helpfulness(self) -> float:
-        return statistics.mean(e.evaluation.helpful for e in self.root)
+        return round(statistics.mean(e.evaluation.helpful for e in self.root) / 5, 2)
 
     def avg_reveal_answer(self) -> float:
-        return statistics.mean(e.evaluation.reveal_answer.lower().strip() == "yes" for e in self.root)
+        return round(statistics.mean(e.evaluation.reveal_answer.lower().strip() == "yes" for e in self.root), 2)

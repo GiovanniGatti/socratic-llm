@@ -10,38 +10,59 @@ from bokeh.transform import dodge
 from data import Scores
 from figures.colors import FINETUNED, BASE, GPT4o
 
+
+class EnsembleDataset:
+    def __init__(self):
+        self.mathdial = dict()
+        self.debugging = dict()
+        self.tutorchat = dict()
+
+
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog="GENERATE-FIGURES")
-    parser.add_argument("--finetuned", type=pathlib.Path, help="Path to the evaluation of the fine-tuned model")
-    parser.add_argument("--base", type=pathlib.Path, help="Path to the evaluation of the base model")
-    parser.add_argument("--gpt4o", type=pathlib.Path, help="Path to the evaluation of the GPT-4o")
+    parser = argparse.ArgumentParser(prog="FIG-SEC6")
+    parser.add_argument("--mathdial-finetuned", type=pathlib.Path,
+                        help="Path to the evaluation of the fine-tuned model")
+    parser.add_argument("--mathdial-base", type=pathlib.Path, help="Path to the evaluation of the base model")
+    parser.add_argument("--mathdial-gpt4o", type=pathlib.Path, help="Path to the evaluation of the GPT-4o")
+
+    parser.add_argument("--debugging-finetuned", type=pathlib.Path,
+                        help="Path to the evaluation of the fine-tuned model")
+    parser.add_argument("--debugging-base", type=pathlib.Path, help="Path to the evaluation of the base model")
+    parser.add_argument("--debugging-gpt4o", type=pathlib.Path, help="Path to the evaluation of the GPT-4o")
+
+    parser.add_argument("--tutorchat-finetuned", type=pathlib.Path,
+                        help="Path to the evaluation of the fine-tuned model")
+    parser.add_argument("--tutorchat-base", type=pathlib.Path, help="Path to the evaluation of the base model")
+    parser.add_argument("--tutorchat-gpt4o", type=pathlib.Path, help="Path to the evaluation of the GPT-4o")
+
     parser.add_argument("--output-dir", type=pathlib.Path, help="Path to directory where to store generated images")
 
     args = parser.parse_args()
 
-    with open(args.finetuned, "r") as f:
-        finetuned = Scores.model_validate_json(f.read())
-
-    with open(args.base, "r") as f:
-        base = Scores.model_validate_json(f.read())
-
-    with open(args.gpt4o, "r") as f:
-        gpt4o = Scores.model_validate_json(f.read())
+    ensemble_dataset = EnsembleDataset()
+    for dataset in ("mathdial", "debugging", "tutorchat"):
+        for model in ("finetuned", "base", "gpt4o"):
+            with open(getattr(args, f"{dataset}_{model}"), "r") as f:
+                scores = Scores.model_validate_json(f.read())
+            getattr(ensemble_dataset, dataset)[model] = scores
 
     # Figure 5
-    datasets = ["MathDial", ]
+    datasets = ["MathDial", "Debugging", "TutorChat"]
     model_name = ["Base", "Fine-tuned", "GPT-4o"]
 
     data = {
         "datasets": datasets,
-        "base": [round(base.avg_summary_score(), 2), ],
-        "finetuned": [round(finetuned.avg_summary_score(), 2), ],
-        "gpt-4o": [round(gpt4o.avg_summary_score(), 2), ],
+        "base": [getattr(ensemble_dataset, dataset)["base"].avg_summary_score() for dataset in
+                 ("mathdial", "debugging", "tutorchat")],
+        "finetuned": [getattr(ensemble_dataset, dataset)["finetuned"].avg_summary_score() for dataset in
+                      ("mathdial", "debugging", "tutorchat")],
+        "gpt-4o": [getattr(ensemble_dataset, dataset)["gpt4o"].avg_summary_score() for dataset in
+                   ("mathdial", "debugging", "tutorchat")],
     }
 
     source = ColumnDataSource(data=data)
 
-    fig5 = figure(x_range=datasets, y_range=(.0, 1.1), toolbar_location=None, tools="", height=450)
+    fig5 = figure(x_range=datasets, y_range=(.0, 1.1), toolbar_location=None, tools="", height=550, width=600)
 
     fig5.vbar(x=dodge("datasets", -0.25, range=fig5.x_range), top="finetuned", source=source,
               width=0.2, color=FINETUNED, legend_label="Finetuned")
@@ -77,12 +98,12 @@ if __name__ == "__main__":
 
     data = {
         "datasets": datasets,
-        "base": [round(base.avg_questions(), 2), round(base.avg_on_topic() / 5, 2),
-                 round(base.avg_helpfulness() / 5, 2), round(base.avg_reveal_answer(), 2)],
-        "finetuned": [round(finetuned.avg_questions(), 2), round(finetuned.avg_on_topic() / 5, 2),
-                      round(finetuned.avg_helpfulness() / 5, 2), round(finetuned.avg_reveal_answer(), 2)],
-        "gpt-4o": [round(gpt4o.avg_questions(), 2), round(gpt4o.avg_on_topic() / 5, 2),
-                   round(gpt4o.avg_helpfulness() / 5, 2), round(gpt4o.avg_reveal_answer(), 2)],
+        "base": [getattr(ensemble_dataset.mathdial["base"], metric)() for metric in
+                 ("avg_questions", "avg_on_topic", "avg_helpfulness", "avg_reveal_answer")],
+        "finetuned": [getattr(ensemble_dataset.mathdial["finetuned"], metric)() for metric in
+                      ("avg_questions", "avg_on_topic", "avg_helpfulness", "avg_reveal_answer")],
+        "gpt-4o": [getattr(ensemble_dataset.mathdial["gpt4o"], metric)() for metric in
+                   ("avg_questions", "avg_on_topic", "avg_helpfulness", "avg_reveal_answer")],
     }
 
     source = ColumnDataSource(data=data)
