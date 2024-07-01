@@ -58,7 +58,7 @@ if __name__ == "__main__":
         try:
             evaluation = Evaluation.model_validate_json(from_json(content, allow_partial=True))
         except ValidationError as e:
-            print("Evaluation error " + e)
+            print("Evaluation error " + str(e))
             continue
         scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))
 
