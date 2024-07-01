@@ -20,10 +20,10 @@ if __name__ == "__main__":
     parser.add_argument("--output", required=True, type=pathlib.Path, help="Path to GPT-4o eval")
     args = parser.parse_args()
 
-    with open(args.eval_prompt, 'r', encoding='utf-8') as file:
+    with open(args.eval_prompt, "r", encoding="utf-8") as file:
         judge_llm_prompt = escape_template(file.read())
 
-    with open(args.inference_prompt, 'r', encoding='utf-8') as file:
+    with open(args.inference_prompt, "r", encoding="utf-8") as file:
         inference_prompt_template = file.read()
 
     with open(args.input) as f:
@@ -55,7 +55,7 @@ if __name__ == "__main__":
         evaluation = Evaluation.model_validate_json(chat_completion.choices[0].message.content)
         scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))
 
-    with open(args.output, 'w') as f:
+    with open(args.output, "w") as f:
         f.write(scores.model_dump_json(indent=2))
 
     os.chmod(args.output, 0o755)

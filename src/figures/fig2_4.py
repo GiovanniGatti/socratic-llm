@@ -36,7 +36,7 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    with open(args.eval_prompt, 'r', encoding='utf-8') as file:
+    with open(args.eval_prompt, "r", encoding="utf-8") as file:
         judge_llm_prompt = escape_template(file.read())
 
     with open(args.humans) as f:
@@ -66,9 +66,9 @@ if __name__ == "__main__":
     idx = [str(i) for i in range(len(_copy))]
 
     data = {
-        'idx': idx,
-        'human': [example.human.summary_score() for example in _copy],
-        'gpt-4o': [example.gpt4o.summary_score() for example in _copy],
+        "idx": idx,
+        "human": [example.human.summary_score() for example in _copy],
+        "gpt-4o": [example.gpt4o.summary_score() for example in _copy],
     }
 
     source = ColumnDataSource(data=data)
@@ -77,10 +77,10 @@ if __name__ == "__main__":
                   height=350, toolbar_location=None, tools="")
     fig2.output_backend = "svg"
 
-    fig2.vbar(x=dodge('idx', -0.06, range=fig2.x_range), top='human', source=source,
+    fig2.vbar(x=dodge("idx", -0.06, range=fig2.x_range), top="human", source=source,
               width=0.05, color=HUMAN, legend_label="Human")
 
-    fig2.vbar(x=dodge('idx', 0.06, range=fig2.x_range), top='gpt-4o', source=source,
+    fig2.vbar(x=dodge("idx", 0.06, range=fig2.x_range), top="gpt-4o", source=source,
               width=0.05, color=GPT4o, legend_label="GPT-4o")
 
     fig2.x_range.range_padding = 0.1
@@ -124,13 +124,13 @@ if __name__ == "__main__":
         root=[Example(prompt=e.prompt, output=e.output, evaluation=e.gpt4o) for e in cross_validations]
     )
     score_components = ["question?", "on topic?", "helpful?", "reveals answer?"]
-    model_name = ['Human', 'GPT-4o']
+    model_name = ["Human", "GPT-4o"]
 
     data = {
-        'score_components': score_components,
-        'humans': [round(human_scores.avg_questions(), 2), round(human_scores.avg_on_topic() / 5, 2),
+        "score_components": score_components,
+        "humans": [round(human_scores.avg_questions(), 2), round(human_scores.avg_on_topic() / 5, 2),
                    round(human_scores.avg_helpfulness() / 5, 2), round(human_scores.avg_reveal_answer(), 2)],
-        'gpt-4o': [round(gpt4o_scores.avg_questions(), 2), round(gpt4o_scores.avg_on_topic() / 5, 2),
+        "gpt-4o": [round(gpt4o_scores.avg_questions(), 2), round(gpt4o_scores.avg_on_topic() / 5, 2),
                    round(gpt4o_scores.avg_helpfulness() / 5, 2), round(gpt4o_scores.avg_reveal_answer(), 2)],
     }
 
@@ -139,17 +139,17 @@ if __name__ == "__main__":
     fig4 = figure(x_range=score_components, y_range=(0, 1.1), height=550, width=600, toolbar_location=None, tools="")
     fig4.output_backend = "svg"
 
-    fig4.vbar(x=dodge('score_components', -0.15, range=fig4.x_range), top='humans', source=source,
+    fig4.vbar(x=dodge("score_components", -0.15, range=fig4.x_range), top="humans", source=source,
               width=0.2, color=HUMAN, legend_label="Humans")
-    fig4.vbar(x=dodge('score_components', 0.15, range=fig4.x_range), top='gpt-4o', source=source,
+    fig4.vbar(x=dodge("score_components", 0.15, range=fig4.x_range), top="gpt-4o", source=source,
               width=0.2, color=GPT4o, legend_label="GPT-4o")
 
-    labels = LabelSet(x=dodge('score_components', -0.15, range=fig4.x_range), y='humans', text='humans',
-                      level='glyph', text_align='center', y_offset=5, source=source)
+    labels = LabelSet(x=dodge("score_components", -0.15, range=fig4.x_range), y="humans", text="humans",
+                      level="glyph", text_align="center", y_offset=5, source=source)
     fig4.add_layout(labels)
 
-    labels = LabelSet(x=dodge('score_components', 0.15, range=fig4.x_range), y='gpt-4o', text='gpt-4o',
-                      level='glyph', text_align='center', y_offset=5, source=source)
+    labels = LabelSet(x=dodge("score_components", 0.15, range=fig4.x_range), y="gpt-4o", text="gpt-4o",
+                      level="glyph", text_align="center", y_offset=5, source=source)
     fig4.add_layout(labels)
 
     fig4.x_range.range_padding = 0.1
