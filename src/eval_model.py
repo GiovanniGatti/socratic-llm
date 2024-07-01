@@ -31,7 +31,7 @@ if __name__ == "__main__":
         inference_prompt_template = escape_template(file.read())
 
     with open(args.input) as f:
-        eval_prompts = Dataset.model_validate_json(f.read())[:1]
+        eval_prompts = Dataset.model_validate_json(f.read())
 
     base_model = PeftConfig.from_pretrained("giovanni-gatti-pinheiro/socratic-llm").base_model_name_or_path
 
