@@ -26,7 +26,7 @@ class CrossValidation:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog="GENERATE-FIG-HUMANS-VS-GPT4o")
+    parser = argparse.ArgumentParser(prog="GENERATE-FIG-SEC5.1")
     parser.add_argument("--humans", type=pathlib.Path, help="Path to the evaluation by humans")
     parser.add_argument("--eval-prompt", required=True, type=pathlib.Path,
                         help="Path to the judge evaluation prompt")
