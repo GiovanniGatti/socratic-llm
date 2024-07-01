@@ -5,3 +5,5 @@ transformers==4.41.2
 peft==0.11.1
 bitsandbytes==0.43.1
 bokeh==3.4.2
+scipy==1.14.0
+selenium==4.22.0
