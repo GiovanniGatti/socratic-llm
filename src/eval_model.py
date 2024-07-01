@@ -1,5 +1,4 @@
 import argparse
-import json
 import pathlib
 
 import torch
@@ -8,27 +7,8 @@ from peft import AutoPeftModelForCausalLM, PeftConfig
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-
-def compose_prompt(element):
-    o = element['output']
-    if "Student" in o:
-        o = o.split("Student")[0]
-
-    s = f"####Here is the conversation:#### \n  {element['prompt']}\n #####Here is the answer#### : \n {o}\n\n"
-
-    return s
-
-
-def calculate_score(eval):
-    sum = 0
-    if eval['questions'] == "Yes":
-        sum += 0.25
-    if eval['reveal_answer'] == "No":
-        sum += 0.25
-    sum += 0.25 / 5 * eval['on_topic']
-    sum += 0.25 / 5 * eval['helpful']
-    return sum
-
+from data import Dataset, Evaluation, Example, Scores
+from tools import escape_template
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="GEN-FINETUNE")
@@ -44,13 +24,13 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with open(args.eval_prompt, 'r', encoding='utf-8') as file:
-        judge_llm_prompt = file.read()
+        judge_llm_prompt = escape_template(file.read())
 
     with open(args.inference_prompt, 'r', encoding='utf-8') as file:
-        inference_prompt_template = file.read()
+        inference_prompt_template = escape_template(file.read())
 
     with open(args.input) as f:
-        eval_prompts = json.load(f)
+        eval_prompts = Dataset.model_validate_json(f.read())[:1]
 
     base_model = PeftConfig.from_pretrained("giovanni-gatti-pinheiro/socratic-llm").base_model_name_or_path
 
@@ -72,46 +52,40 @@ if __name__ == "__main__":
 
         tokenizer = AutoTokenizer.from_pretrained("giovanni-gatti-pinheiro/socratic-llm", trust_remote_code=True)
 
-    evaluation = [{"prompt": item} for item in eval_prompts]
-
-    for element in tqdm(evaluation):
-        prompt = element["prompt"]
-
-        p = inference_prompt_template.format(input=prompt)
-
-        encoded_inputs = tokenizer.encode(p, return_tensors="pt").to("cuda")
+    answers = []
+    for prompt in tqdm(eval_prompts):
+        encoded_inputs = tokenizer.encode(inference_prompt_template.format(input=prompt), return_tensors="pt").to("cuda")
 
         generate_kwargs = dict(
             input_ids=encoded_inputs,
+            do_sample=True,
             temperature=0.2,
             top_p=0.95,
             top_k=40,
             max_new_tokens=200,
             repetition_penalty=1.3,
             eos_token_id=tokenizer.eos_token_id,
-            pad_token_id=tokenizer.eos_token_id
+            pad_token_id=tokenizer.eos_token_id,
         )
 
         output = model.generate(**generate_kwargs)
         response = tokenizer.decode(output[0])[len(p):]
-        element["output"] = response
+        answers.append(response)
 
     client = OpenAI(api_key=args.openai_api_key)
-    for element in tqdm(evaluation):
-        out = compose_prompt(element)
+    scores = Scores()
+    for prompt, answer in tqdm(zip(eval_prompts, answers)):
+        student = answer.split("Student")[0] if "Student" in answer else answer
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "user", "content": judge_llm_prompt},
-                {"role": "user", "content": out, }
+                {"role": "user", "content": judge_llm_prompt.format(conversation=prompt, answer=student)},
             ],
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             temperature=0.2,
+            seed=0
         )
-        res = json.loads(chat_completion.choices[0].message.content)
-
-        score = calculate_score(res)
-        element["score"] = score
-        element["evaluation"] = res
+        evaluation = Evaluation.model_validate_json(chat_completion.choices[0].message.content)
+        scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))
 
     with open(args.output, 'w') as f:
-        json.dump(evaluation, f, indent=2)
+        f.write(scores.model_dump_json(indent=2))

@@ -1,31 +1,11 @@
 import argparse
-import json
 import pathlib
 
 from openai import OpenAI
 from tqdm import tqdm
 
-
-def compose_prompt(element):
-    o = element['output']
-    if "Student" in o:
-        o = o.split("Student")[0]
-
-    s = f"####Here is the conversation:#### \n  {element['prompt']}\n #####Here is the answer#### : \n {o}\n\n"
-
-    return s
-
-
-def calculate_score(eval):
-    sum = 0
-    if eval['questions'] == "Yes":
-        sum += 0.25
-    if eval['reveal_answer'] == "No":
-        sum += 0.25
-    sum += 0.25 / 5 * eval['on_topic']
-    sum += 0.25 / 5 * eval['helpful']
-    return sum
-
+from data import Dataset, Evaluation, Scores, Example
+from tools import escape_template
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="GEN-SOCRATIC-GPT-4o")
@@ -40,47 +20,39 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     with open(args.eval_prompt, 'r', encoding='utf-8') as file:
-        judge_llm_prompt = file.read()
+        judge_llm_prompt = escape_template(file.read())
 
     with open(args.inference_prompt, 'r', encoding='utf-8') as file:
         inference_prompt_template = file.read()
 
     with open(args.input) as f:
-        eval_prompts = json.load(f)
+        eval_prompts = Dataset.model_validate_json(f.read())
 
     client = OpenAI(api_key=args.openai_api_key)
 
-    evaluation = [{"prompt": item} for item in eval_prompts]
-
-    for element in tqdm(evaluation):
-        prompt = element["prompt"]
-
-        p = inference_prompt_template.format(input=prompt)
-
+    scores = Scores()
+    for prompt in tqdm(eval_prompts):
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "user", "content": p},
+                {"role": "user", "content": inference_prompt_template.format(input=prompt)},
             ],
             model="gpt-4o",
             temperature=0.2,
+            seed=0,
         )
+        answer = chat_completion.choices[0].message.content
 
-        element["output"] = chat_completion.choices[0].message.content
-
-        out = compose_prompt(element)
+        student = answer.split("Student")[0] if "Student" in answer else answer
         chat_completion = client.chat.completions.create(
             messages=[
-                {"role": "user", "content": judge_llm_prompt},
-                {"role": "user", "content": out, }
+                {"role": "user", "content": judge_llm_prompt.format(conversation=prompt, answer=student)},
             ],
-            model="gpt-3.5-turbo",
+            model="gpt-4o",
             temperature=0.2,
+            seed=0,
         )
-        res = json.loads(chat_completion.choices[0].message.content)
-
-        score = calculate_score(res)
-        element["score"] = score
-        element["evaluation"] = res
+        evaluation = Evaluation.model_validate_json(chat_completion.choices[0].message.content)
+        scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))
 
     with open(args.output, 'w') as f:
-        json.dump(evaluation, f, indent=2)
+        f.write(scores.model_dump_json(indent=2))
