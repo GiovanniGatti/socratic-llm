@@ -92,7 +92,7 @@ if __name__ == "__main__":
         content = chat_completion.choices[0].message.content
         try:
             evaluation = Evaluation.model_validate(from_json(content, allow_partial=True))
-        except ValidationError as e:
+        except ValidationError | ValueError as e:
             print("Evaluation error " + str(e))
             continue
         scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))

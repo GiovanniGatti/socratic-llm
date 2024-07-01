@@ -60,7 +60,7 @@ if __name__ == "__main__":
         content = chat_completion.choices[0].message.content
         try:
             evaluation = Evaluation.model_validate(from_json(content, allow_partial=True))
-        except ValidationError as e:
+        except ValidationError | ValueError as e:
             print("Evaluation error " + e)
             continue
         cross_validation = CrossValidation(example.prompt, example.output, human=example.evaluation, gpt4o=evaluation)
