@@ -20,6 +20,7 @@ if __name__ == "__main__":
     parser.add_argument("--eval-prompt", required=True, type=pathlib.Path,
                         help="Path to the judge evaluation prompt")
     parser.add_argument("--openai-api-key", required=True, type=str, help="Open AI api key")
+    parser.add_argument("--peft-adapter", required=True, type=str, help="HF model path")
     parser.add_argument("--without-lora-adapter", action="store_true", help="Disable LoRA adapter (no finetuning)")
     parser.add_argument("--output", required=True, type=pathlib.Path, help="Path to GPT-4o eval")
     args = parser.parse_args()
@@ -33,7 +34,7 @@ if __name__ == "__main__":
     with open(args.input) as f:
         eval_prompts = Dataset.model_validate_json(f.read())
 
-    base_model = PeftConfig.from_pretrained("giovanni-gatti-pinheiro/socratic-llm").base_model_name_or_path
+    base_model = PeftConfig.from_pretrained(args.peft_adapter).base_model_name_or_path
 
     if args.without_lora_adapter:
         model = AutoModelForCausalLM.from_pretrained(
@@ -45,13 +46,13 @@ if __name__ == "__main__":
         tokenizer = AutoTokenizer.from_pretrained(base_model, trust_remote_code=True)
     else:
         model = AutoPeftModelForCausalLM.from_pretrained(
-            "giovanni-gatti-pinheiro/socratic-llm",
+            args.peft_adapter,
             torch_dtype=torch.bfloat16,
             load_in_4bit=True,
             trust_remote_code=True,
         )
 
-        tokenizer = AutoTokenizer.from_pretrained("giovanni-gatti-pinheiro/socratic-llm", trust_remote_code=True)
+        tokenizer = AutoTokenizer.from_pretrained(args.peft_adapter, trust_remote_code=True)
 
     answers = []
     for prompt in tqdm(eval_prompts):

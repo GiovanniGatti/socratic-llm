@@ -24,8 +24,18 @@ if __name__ == "__main__":
                             "--input", f"./datasets/{dataset}.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
+                            "--peft-adapter", "giovanni-gatti-pinheiro/socratic-llm",
                             "--openai-api-key", OPENAI_API_KEY,
                             "--output", f"{args.evaluation_dir}/{dataset}_finetuned.json"])
+
+        if args.use_cache and not Path(f"{args.evaluation_dir}/{dataset}_finetuned_with_mathdial.json").exists():
+            subprocess.run(["python", "-m", "eval_model",
+                            "--input", f"./datasets/{dataset}.json",
+                            "--inference-prompt", "./templates/inference.txt",
+                            "--eval-prompt", "./templates/judge_llm.txt",
+                            "--peft-adapter", "giovanni-gatti-pinheiro/socratic-llm-mathdial",
+                            "--openai-api-key", OPENAI_API_KEY,
+                            "--output", f"{args.evaluation_dir}/{dataset}_finetuned_with_mathdial.json"])
 
         if args.use_cache and not Path(f"{args.evaluation_dir}/{dataset}_base.json").exists():
             subprocess.run(["python", "-m", "eval_model",
@@ -33,6 +43,7 @@ if __name__ == "__main__":
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--openai-api-key", OPENAI_API_KEY,
+                            "--peft-adapter", "giovanni-gatti-pinheiro/socratic-llm",
                             "--without-lora-adapter",
                             "--output", f"{args.evaluation_dir}/{dataset}_base.json"])
 
@@ -52,7 +63,7 @@ if __name__ == "__main__":
                         "--output", f"{args.figures_dir}"])
 
     subprocess.run(["python", "-m", "figures.fig5_6",
-                    "--mathdial-finetuned", "./evaluations/mathdial_finetuned.json",
+                    "--mathdial-finetuned", f"{args.evaluation_dir}/mathdial_finetuned.json",
                     "--mathdial-base", f"{args.evaluation_dir}/mathdial_base.json",
                     "--mathdial-gpt4o", f"{args.evaluation_dir}/mathdial_gpt4o.json",
                     "--debugging-finetuned", f"{args.evaluation_dir}/debugging_finetuned.json",
@@ -61,4 +72,16 @@ if __name__ == "__main__":
                     "--tutorchat-finetuned", f"{args.evaluation_dir}/tutorchat_finetuned.json",
                     "--tutorchat-base", f"{args.evaluation_dir}/tutorchat_base.json",
                     "--tutorchat-gpt4o", f"{args.evaluation_dir}/tutorchat_gpt4o.json",
+                    "--output-dir", f"{args.figures_dir}"])
+
+    subprocess.run(["python", "-m", "figures.table",
+                    "--mathdial-finetuned-with-tutorchat", f"{args.evaluation_dir}/mathdial_finetuned.json",
+                    "--debugging-finetuned-with-tutorchat", f"{args.evaluation_dir}/debugging_finetuned.json",
+                    "--tutorchat-finetuned-with-tutorchat", f"{args.evaluation_dir}/tutorchat_finetuned.json",
+                    "--mathdial-finetuned-with-mathdial",
+                    f"{args.evaluation_dir}/mathdial_finetuned_with_mathdial.json",
+                    "--debugging-finetuned-with-mathdial",
+                    f"{args.evaluation_dir}/debugging_finetuned_with_mathdial.json",
+                    "--tutorchat-finetuned-with-mathdial",
+                    f"{args.evaluation_dir}/tutorchat_finetuned_with_mathdial.json",
                     "--output-dir", f"{args.figures_dir}"])
