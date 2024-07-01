@@ -1,15 +1,18 @@
 import argparse
 import pathlib
+import random
 from typing import List
 
 import scipy
-from bokeh.io import show, export_svg
+from bokeh.io import export_svg
 from bokeh.models import ColumnDataSource
 from bokeh.plotting import figure
+from bokeh.transform import dodge
 from openai import OpenAI
 from tqdm import tqdm
 
 from data import Scores, Evaluation
+from figures.colors import HUMAN, GPT4o
 from tools import escape_template
 
 
@@ -55,6 +58,37 @@ if __name__ == "__main__":
         cross_validation = CrossValidation(example.prompt, example.output, human=example.evaluation, gpt4o=evaluation)
         cross_validations.append(cross_validation)
 
+    # FIGURE 2
+    _copy = list(cross_validations)
+    random.shuffle(_copy)
+    _copy = _copy[:30]
+    idx = [str(i) for i in range(len(_copy))]
+
+    data = {
+        'idx': idx,
+        'human': [example.human.get_score() for example in _copy],
+        'gpt-4o': [example.gpt4o.get_score() for example in _copy],
+    }
+
+    source = ColumnDataSource(data=data)
+
+    fig2 = figure(x_range=idx, y_range=(0., 1.05), title="Summary scores for 30 samples",
+                  height=350, toolbar_location=None, tools="")
+
+    fig2.vbar(x=dodge('idx', -0.06, range=fig2.x_range), top='human', source=source,
+              width=0.05, color=HUMAN, legend_label="Human")
+
+    fig2.vbar(x=dodge('idx', 0.06, range=fig2.x_range), top='gpt-4o', source=source,
+              width=0.05, color=GPT4o, legend_label="GPT-4o")
+
+    fig2.x_range.range_padding = 0.1
+    fig2.xgrid.grid_line_color = None
+    fig2.legend.location = "bottom_right"
+    fig2.legend.orientation = "horizontal"
+
+    export_svg(fig2, filename=f"{args.output_dir}/fig2.svg")
+
+    # FIGURE 3
     data = {
         "humans": [example.human.get_score() for example in cross_validations],
         "gpt-4o": [example.gpt4o.get_score() for example in cross_validations],
@@ -67,11 +101,11 @@ if __name__ == "__main__":
 
     source = ColumnDataSource(data)
 
-    plot = figure(width=600, height=600, y_range=(-0.05, 1.05), x_range=(-0.05, 1.05),
+    fig3 = figure(width=600, height=600, y_range=(-0.05, 1.05), x_range=(-0.05, 1.05),
                   title=f"Pearson correlation={pearson:.2f}",
                   x_axis_label="GPT-4o Score", y_axis_label="Human score")
-    plot.output_backend = "svg"
+    fig3.output_backend = "svg"
 
-    plot.scatter(x="gpt-4o", y="humans", size=8, alpha=0.8, source=source)
+    fig3.scatter(x="gpt-4o", y="humans", size=8, alpha=0.8, source=source)
 
-    export_svg(plot, filename=f"{args.output_dir}/fig3.svg")
+    export_svg(fig3, filename=f"{args.output_dir}/fig3.svg")
