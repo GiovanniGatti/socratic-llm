@@ -25,6 +25,6 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 
 COPY src .
 COPY templates templates
-COPY inputs inputs
+COPY datasets datasets
 
 ENTRYPOINT ["python"]

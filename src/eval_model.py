@@ -33,7 +33,7 @@ def calculate_score(eval):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="GEN-FINETUNE")
     parser.add_argument("--input", required=True, type=pathlib.Path,
-                        help="Path to evaluation prompts")
+                        help="Path to evaluation datasets")
     parser.add_argument("--inference-prompt", required=True, type=pathlib.Path,
                         help="Path to the inference prompt")
     parser.add_argument("--eval-prompt", required=True, type=pathlib.Path,
