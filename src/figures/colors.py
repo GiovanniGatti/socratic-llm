@@ -1,2 +1,4 @@
 HUMAN = "#17b329"
 GPT4o = "#630aab"
+FINETUNED = "#1761c2"
+BASE = "#a10d23"

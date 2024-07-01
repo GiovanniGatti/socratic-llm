@@ -49,6 +49,9 @@ class Scores(RootModel):
     def __getitem__(self, item):
         return self.root[item]
 
+    def avg_summary_score(self) -> float:
+        return statistics.mean(e.evaluation.summary_score() for e in self.root)
+
     def avg_questions(self) -> float:
         return statistics.mean(e.evaluation.questions.lower().strip() == "yes" for e in self.root)
 

@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     source = ColumnDataSource(data=data)
 
-    fig4 = figure(x_range=score_components, y_range=(0, 1.1), height=320, width=350, toolbar_location=None, tools="")
+    fig4 = figure(x_range=score_components, y_range=(0, 1.1), height=550, width=600, toolbar_location=None, tools="")
     fig4.output_backend = "svg"
 
     fig4.vbar(x=dodge('score_components', -0.15, range=fig4.x_range), top='humans', source=source,
