@@ -1,3 +1,4 @@
+import statistics
 from typing import List
 
 from pydantic import RootModel, BaseModel, computed_field
@@ -19,7 +20,7 @@ class Evaluation(BaseModel):
     helpful: float
     reveal_answer: str
 
-    def get_score(self) -> float:
+    def summary_score(self) -> float:
         score = 0.
         score += 0.25 if self.questions.lower().strip() == "yes" else 0.
         score += 0.25 if self.reveal_answer.lower().strip() == "no" else 0.
@@ -36,7 +37,7 @@ class Example(BaseModel):
     @computed_field
     @property
     def score(self) -> float:
-        return self.evaluation.get_score()
+        return self.evaluation.summary_score()
 
 
 class Scores(RootModel):
@@ -47,3 +48,15 @@ class Scores(RootModel):
 
     def __getitem__(self, item):
         return self.root[item]
+
+    def avg_questions(self) -> float:
+        return statistics.mean(e.evaluation.questions.lower().strip() == "yes" for e in self.root)
+
+    def avg_on_topic(self) -> float:
+        return statistics.mean(e.evaluation.on_topic for e in self.root)
+
+    def avg_helpfulness(self) -> float:
+        return statistics.mean(e.evaluation.helpful for e in self.root)
+
+    def avg_reveal_answer(self) -> float:
+        return statistics.mean(e.evaluation.reveal_answer.lower().strip() == "yes" for e in self.root)

@@ -5,13 +5,13 @@ from typing import List
 
 import scipy
 from bokeh.io import export_svg
-from bokeh.models import ColumnDataSource
+from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.plotting import figure
 from bokeh.transform import dodge
 from openai import OpenAI
 from tqdm import tqdm
 
-from data import Scores, Evaluation
+from data import Scores, Evaluation, Example
 from figures.colors import HUMAN, GPT4o
 from tools import escape_template
 
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
     client = OpenAI(api_key=args.openai_api_key)
     cross_validations: List[CrossValidation] = []
-    for example in tqdm(human_eval[:3]):
+    for example in tqdm(human_eval):
         answer = example.output
         student = answer.split("Student")[0] if "Student" in answer else answer
         chat_completion = client.chat.completions.create(
@@ -66,8 +66,8 @@ if __name__ == "__main__":
 
     data = {
         'idx': idx,
-        'human': [example.human.get_score() for example in _copy],
-        'gpt-4o': [example.gpt4o.get_score() for example in _copy],
+        'human': [example.human.summary_score() for example in _copy],
+        'gpt-4o': [example.gpt4o.summary_score() for example in _copy],
     }
 
     source = ColumnDataSource(data=data)
@@ -91,13 +91,13 @@ if __name__ == "__main__":
 
     # FIGURE 3
     data = {
-        "humans": [example.human.get_score() for example in cross_validations],
-        "gpt-4o": [example.gpt4o.get_score() for example in cross_validations],
+        "humans": [example.human.summary_score() for example in cross_validations],
+        "gpt-4o": [example.gpt4o.summary_score() for example in cross_validations],
     }
 
     pearson, _ = scipy.stats.pearsonr(
-        x=[example.human.get_score() for example in cross_validations],
-        y=[example.gpt4o.get_score() for example in cross_validations]
+        x=[example.human.summary_score() for example in cross_validations],
+        y=[example.gpt4o.summary_score() for example in cross_validations]
     )
 
     source = ColumnDataSource(data)
@@ -110,3 +110,46 @@ if __name__ == "__main__":
     fig3.scatter(x="gpt-4o", y="humans", size=8, alpha=0.8, source=source)
 
     export_svg(fig3, filename=f"{args.output_dir}/fig3.svg")
+
+    # FIGURE 4
+    human_scores = Scores(
+        root=[Example(prompt=e.prompt, output=e.output, evaluation=e.human) for e in cross_validations]
+    )
+    gpt4o_scores = Scores(
+        root=[Example(prompt=e.prompt, output=e.output, evaluation=e.gpt4o) for e in cross_validations]
+    )
+    score_components = ["question?", "on topic?", "helpful?", "reveals answer?"]
+    model_name = ['Human', 'GPT-4o']
+
+    data = {
+        'score_components': score_components,
+        'humans': [round(human_scores.avg_questions(), 2), round(human_scores.avg_on_topic() / 5, 2),
+                   round(human_scores.avg_helpfulness() / 5, 2), round(human_scores.avg_reveal_answer(), 2)],
+        'gpt-4o': [round(gpt4o_scores.avg_questions(), 2), round(gpt4o_scores.avg_on_topic() / 5, 2),
+                   round(gpt4o_scores.avg_helpfulness() / 5, 2), round(gpt4o_scores.avg_reveal_answer(), 2)],
+    }
+
+    source = ColumnDataSource(data=data)
+
+    fig4 = figure(x_range=score_components, y_range=(0, 1.1), height=320, width=350, toolbar_location=None, tools="")
+    fig4.output_backend = "svg"
+
+    fig4.vbar(x=dodge('score_components', -0.15, range=fig4.x_range), top='humans', source=source,
+              width=0.2, color=HUMAN, legend_label="Humans")
+    fig4.vbar(x=dodge('score_components', 0.15, range=fig4.x_range), top='gpt-4o', source=source,
+              width=0.2, color=GPT4o, legend_label="GPT-4o")
+
+    labels = LabelSet(x=dodge('score_components', -0.15, range=fig4.x_range), y='humans', text='humans',
+                      level='glyph', text_align='center', y_offset=5, source=source)
+    fig4.add_layout(labels)
+
+    labels = LabelSet(x=dodge('score_components', 0.15, range=fig4.x_range), y='gpt-4o', text='gpt-4o',
+                      level='glyph', text_align='center', y_offset=5, source=source)
+    fig4.add_layout(labels)
+
+    fig4.x_range.range_padding = 0.1
+    fig4.xgrid.grid_line_color = None
+    fig4.legend.location = "top_right"
+    fig4.legend.orientation = "vertical"
+
+    export_svg(fig4, filename=f"{args.output_dir}/fig4.svg")
