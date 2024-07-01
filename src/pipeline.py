@@ -52,7 +52,13 @@ if __name__ == "__main__":
                         "--output", f"{args.figures_dir}"])
 
     subprocess.run(["python", "-m", "figures.fig5_6",
-                    "--finetuned", f"{args.evaluation_dir}/mathdial_finetuned.json",
-                    "--base", f"{args.evaluation_dir}/mathdial_base.json",
-                    "--gpt4o", f"{args.evaluation_dir}/mathdial_gpt4o.json",
-                    "--output", f"{args.figures_dir}"])
+                    "--mathdial-finetuned", "./evaluations/mathdial_finetuned.json",
+                    "--mathdial-base", f"{args.evaluation_dir}/mathdial_base.json",
+                    "--mathdial-gpt4o", f"{args.evaluation_dir}/mathdial_gpt4o.json",
+                    "--debugging-finetuned", f"{args.evaluation_dir}/debugging_finetuned.json",
+                    "--debugging-base", f"{args.evaluation_dir}/debugging_base.json",
+                    "--debugging-gpt4o", f"{args.evaluation_dir}/debugging_gpt4o.json",
+                    "--tutorchat-finetuned", f"{args.evaluation_dir}/tutorchat_finetuned.json",
+                    "--tutorchat-base", f"{args.evaluation_dir}/tutorchat_base.json",
+                    "--tutorchat-gpt4o", f"{args.evaluation_dir}/tutorchat_gpt4o.json",
+                    "--output-dir", f"{args.figures_dir}"])
