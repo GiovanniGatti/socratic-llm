@@ -74,6 +74,7 @@ if __name__ == "__main__":
 
     fig2 = figure(x_range=idx, y_range=(0., 1.05), title="Summary scores for 30 samples",
                   height=350, toolbar_location=None, tools="")
+    fig2.output_backend = "svg"
 
     fig2.vbar(x=dodge('idx', -0.06, range=fig2.x_range), top='human', source=source,
               width=0.05, color=HUMAN, legend_label="Human")
