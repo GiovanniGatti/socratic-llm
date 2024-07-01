@@ -1,4 +1,5 @@
 import argparse
+import os
 import pathlib
 import random
 from typing import List
@@ -87,7 +88,9 @@ if __name__ == "__main__":
     fig2.legend.location = "bottom_right"
     fig2.legend.orientation = "horizontal"
 
-    export_svg(fig2, filename=f"{args.output_dir}/fig2.svg")
+    filename = f"{args.output_dir}/fig2.svg"
+    export_svg(fig2, filename=filename)
+    os.chmod(filename, 0o755)
 
     # FIGURE 3
     data = {
@@ -109,7 +112,9 @@ if __name__ == "__main__":
 
     fig3.scatter(x="gpt-4o", y="humans", size=8, alpha=0.8, source=source)
 
-    export_svg(fig3, filename=f"{args.output_dir}/fig3.svg")
+    filename = f"{args.output_dir}/fig3.svg"
+    export_svg(fig3, filename=filename)
+    os.chmod(filename, 0o755)
 
     # FIGURE 4
     human_scores = Scores(
@@ -152,4 +157,6 @@ if __name__ == "__main__":
     fig4.legend.location = "top_right"
     fig4.legend.orientation = "vertical"
 
-    export_svg(fig4, filename=f"{args.output_dir}/fig4.svg")
+    filename = f"{args.output_dir}/fig4.svg"
+    export_svg(fig4, filename=filename)
+    os.chmod(filename, 0o755)

@@ -1,4 +1,5 @@
 import argparse
+import os
 import pathlib
 
 from bokeh.io import export_svg
@@ -18,13 +19,13 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
-    with open(args.finetuned) as f:
+    with open(args.finetuned, "r") as f:
         finetuned = Scores.model_validate_json(f.read())
 
-    with open(args.base) as f:
+    with open(args.base, "r") as f:
         base = Scores.model_validate_json(f.read())
 
-    with open(args.gpt4o) as f:
+    with open(args.gpt4o, "r") as f:
         gpt4o = Scores.model_validate_json(f.read())
 
     # Figure 5
@@ -66,7 +67,9 @@ if __name__ == "__main__":
     fig5.legend.location = "bottom_right"
     fig5.legend.orientation = "horizontal"
 
-    export_svg(fig5, filename=f"{args.output_dir}/fig5.svg")
+    filename = f"{args.output_dir}/fig5.svg"
+    export_svg(fig5, filename=filename)
+    os.chmod(filename, 0o755)
 
     # Figure 6
     datasets = ["question?", "on topic?", "helpful?", "reveal answer?"]
@@ -111,4 +114,6 @@ if __name__ == "__main__":
     fig6.legend.location = "top_right"
     fig6.legend.orientation = "vertical"
 
-    export_svg(fig6, filename=f"{args.output_dir}/fig6.svg")
+    filename = f"{args.output_dir}/fig6.svg"
+    export_svg(fig6, filename=filename)
+    os.chmod(filename, 0o755)

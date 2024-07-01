@@ -1,4 +1,5 @@
 import argparse
+import os
 import pathlib
 
 import torch
@@ -90,3 +91,5 @@ if __name__ == "__main__":
 
     with open(args.output, 'w') as f:
         f.write(scores.model_dump_json(indent=2))
+
+    os.chmod(args.output, 0o755)
