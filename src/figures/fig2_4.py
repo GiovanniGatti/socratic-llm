@@ -59,7 +59,7 @@ if __name__ == "__main__":
         )
         content = chat_completion.choices[0].message.content
         try:
-            evaluation = Evaluation.model_validate_json(from_json(content, allow_partial=True))
+            evaluation = Evaluation.model_validate(from_json(content, allow_partial=True))
         except ValidationError as e:
             print("Evaluation error " + e)
             continue
