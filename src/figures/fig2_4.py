@@ -10,6 +10,8 @@ from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.plotting import figure
 from bokeh.transform import dodge
 from openai import OpenAI
+from pydantic import ValidationError
+from pydantic_core import from_json
 from tqdm import tqdm
 
 from data import Scores, Evaluation, Example
@@ -55,7 +57,12 @@ if __name__ == "__main__":
             temperature=0.2,
             seed=0,
         )
-        evaluation = Evaluation.model_validate_json(chat_completion.choices[0].message.content)
+        content = chat_completion.choices[0].message.content
+        try:
+            evaluation = Evaluation.model_validate_json(from_json(content, allow_partial=True))
+        except ValidationError as e:
+            print("Evaluation error " + e)
+            continue
         cross_validation = CrossValidation(example.prompt, example.output, human=example.evaluation, gpt4o=evaluation)
         cross_validations.append(cross_validation)
 

@@ -3,6 +3,8 @@ import os
 import pathlib
 
 from openai import OpenAI
+from pydantic import ValidationError
+from pydantic_core import from_json
 from tqdm import tqdm
 
 from data import Dataset, Evaluation, Scores, Example
@@ -52,7 +54,12 @@ if __name__ == "__main__":
             temperature=0.2,
             seed=0,
         )
-        evaluation = Evaluation.model_validate_json(chat_completion.choices[0].message.content)
+        content = chat_completion.choices[0].message.content
+        try:
+            evaluation = Evaluation.model_validate_json(from_json(content, allow_partial=True))
+        except ValidationError as e:
+            print("Evaluation error " + e)
+            continue
         scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))
 
     with open(args.output, "w") as f:
