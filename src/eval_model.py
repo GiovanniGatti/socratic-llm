@@ -54,7 +54,8 @@ if __name__ == "__main__":
 
     answers = []
     for prompt in tqdm(eval_prompts):
-        encoded_inputs = tokenizer.encode(inference_prompt_template.format(input=prompt), return_tensors="pt").to("cuda")
+        p = inference_prompt_template.format(input=prompt)
+        encoded_inputs = tokenizer.encode(p, return_tensors="pt").to("cuda")
 
         generate_kwargs = dict(
             input_ids=encoded_inputs,
