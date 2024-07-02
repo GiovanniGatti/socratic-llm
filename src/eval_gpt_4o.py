@@ -27,7 +27,7 @@ if __name__ == "__main__":
         inference_prompt_template = file.read()
 
     with open(args.input) as f:
-        eval_prompts = Dataset.model_validate_json(f.read())[:2]
+        eval_prompts = Dataset.model_validate_json(f.read())
 
     client = OpenAI(api_key=args.openai_api_key)
 
