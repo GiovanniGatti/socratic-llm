@@ -3,12 +3,10 @@ import os
 import pathlib
 
 from openai import OpenAI
-from pydantic import ValidationError
-from pydantic_core import from_json
 from tqdm import tqdm
 
-from data import Dataset, Evaluation, Scores, Example
-from tools import escape_template
+from data import Dataset, Scores, Example
+from tools import escape_template, safe_eval
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="GEN-SOCRATIC-GPT-4o")
@@ -29,7 +27,7 @@ if __name__ == "__main__":
         inference_prompt_template = file.read()
 
     with open(args.input) as f:
-        eval_prompts = Dataset.model_validate_json(f.read())
+        eval_prompts = Dataset.model_validate_json(f.read())[:2]
 
     client = OpenAI(api_key=args.openai_api_key)
 
@@ -46,21 +44,20 @@ if __name__ == "__main__":
         answer = chat_completion.choices[0].message.content
 
         student = answer.split("Student")[0] if "Student" in answer else answer
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "user", "content": judge_llm_prompt.format(conversation=prompt, answer=student)},
-            ],
-            model="gpt-4o",
-            temperature=0.2,
-            seed=0,
+
+        raw_evaluation, error, evaluation = safe_eval(
+            client, judge_llm_prompt.format(conversation=prompt, answer=student)
         )
-        content = chat_completion.choices[0].message.content
-        try:
-            evaluation = Evaluation.model_validate(from_json(content, allow_partial=True))
-        except ValidationError | ValueError as e:
-            print("Evaluation error " + str(e))
-            continue
-        scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))
+
+        scores.root.append(
+            Example(
+                prompt=prompt,
+                output=answer,
+                raw_evaluation=raw_evaluation,
+                evaluation_error=error,
+                evaluation=evaluation
+            )
+        )
 
     with open(args.output, "w") as f:
         f.write(scores.model_dump_json(indent=2))

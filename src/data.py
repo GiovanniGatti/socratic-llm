@@ -1,5 +1,5 @@
 import statistics
-from typing import List
+from typing import List, Optional
 
 from pydantic import RootModel, BaseModel, computed_field
 
@@ -32,7 +32,9 @@ class Evaluation(BaseModel):
 class Example(BaseModel):
     prompt: str
     output: str
-    evaluation: Evaluation
+    raw_evaluation: str
+    evaluation_error: Optional[str]
+    evaluation: Optional[Evaluation]
 
     @computed_field
     @property

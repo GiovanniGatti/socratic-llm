@@ -1,4 +1,11 @@
 import re
+from typing import Optional, Tuple
+
+from openai import OpenAI
+from pydantic import ValidationError
+from pydantic_core import from_json
+
+from data import Evaluation
 
 
 def escape_template(str_template: str) -> (str, set[str]):
@@ -31,3 +38,42 @@ def escape_template(str_template: str) -> (str, set[str]):
         final_template = final_template.replace(placeholder, key)
 
     return final_template
+
+
+def safe_eval(client: OpenAI, content: str, max_retry: int = 3) -> Tuple[str, Optional[str], Optional[Evaluation]]:
+    """
+    Performs a call to gpt-4o and parses its assessments. Errors are managed to avoid failures.
+
+    :param client: the OpenAI client
+    :param content: the eval raw message
+    :param max_retry: max number of retries to fix the input
+    :return: A tuple containing GPT-4o raw message, the error message (if applicable) and the evaluation result (if
+    parsing successful)
+    """
+    chat_completion = client.chat.completions.create(
+        messages=[{"role": "user", "content": content}, ],
+        model="gpt-4o",
+        temperature=0.2,
+        seed=0
+    )
+    content = chat_completion.choices[0].message.content
+
+    i = 0
+    error: Optional[Exception] = None
+    while i < max_retry:
+        try:
+            deserialized = from_json(content, allow_partial=True)
+        except ValueError as e:
+            error = e
+            i += 1
+            continue
+
+        try:
+            evaluation = Evaluation.model_validate(deserialized)
+            return content, None, evaluation
+        except ValidationError as e:
+            error = e
+            i += 1
+            continue
+
+    return content, str(error), None

@@ -10,13 +10,11 @@ from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.plotting import figure
 from bokeh.transform import dodge
 from openai import OpenAI
-from pydantic import ValidationError
-from pydantic_core import from_json
 from tqdm import tqdm
 
 from data import Scores, Evaluation, Example
 from figures.colors import HUMAN, GPT4o
-from tools import escape_template
+from tools import escape_template, safe_eval
 
 
 class CrossValidation:
@@ -49,22 +47,18 @@ if __name__ == "__main__":
     for example in tqdm(human_eval):
         answer = example.output
         student = answer.split("Student")[0] if "Student" in answer else answer
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "user", "content": judge_llm_prompt.format(conversation=example.prompt, answer=student)},
-            ],
-            model="gpt-4o",
-            temperature=0.2,
-            seed=0,
+
+        raw_evaluation, error, evaluation = safe_eval(
+            client, judge_llm_prompt.format(conversation=example.prompt, answer=student)
         )
-        content = chat_completion.choices[0].message.content
-        try:
-            evaluation = Evaluation.model_validate(from_json(content, allow_partial=True))
-        except ValidationError | ValueError as e:
-            print("Evaluation error " + e)
-            continue
-        cross_validation = CrossValidation(example.prompt, example.output, human=example.evaluation, gpt4o=evaluation)
-        cross_validations.append(cross_validation)
+        if evaluation is not None:
+            cross_validation = CrossValidation(
+                example.prompt, example.output, human=example.evaluation, gpt4o=evaluation
+            )
+            cross_validations.append(cross_validation)
+        else:
+            print(f"Raw GPT-4o message: {raw_evaluation}")
+            print(f"Error message: {error}")
 
     # FIGURE 2
     _copy = list(cross_validations)

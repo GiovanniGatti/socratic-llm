@@ -11,7 +11,7 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from data import Dataset, Evaluation, Example, Scores
-from tools import escape_template
+from tools import escape_template, safe_eval
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="GEN-FINETUNE")
@@ -81,21 +81,20 @@ if __name__ == "__main__":
     scores = Scores()
     for prompt, answer in tqdm(zip(eval_prompts, answers)):
         student = answer.split("Student")[0] if "Student" in answer else answer
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "user", "content": judge_llm_prompt.format(conversation=prompt, answer=student)},
-            ],
-            model="gpt-4o",
-            temperature=0.2,
-            seed=0
+
+        raw_evaluation, error, evaluation = safe_eval(
+            client, judge_llm_prompt.format(conversation=prompt, answer=student)
         )
-        content = chat_completion.choices[0].message.content
-        try:
-            evaluation = Evaluation.model_validate(from_json(content, allow_partial=True))
-        except ValidationError | ValueError as e:
-            print("Evaluation error " + str(e))
-            continue
-        scores.root.append(Example(prompt=prompt, output=answer, evaluation=evaluation))
+
+        scores.root.append(
+            Example(
+                prompt=prompt,
+                output=answer,
+                raw_evaluation=raw_evaluation,
+                evaluation_error=error,
+                evaluation=evaluation
+            )
+        )
 
     with open(args.output, "w") as f:
         f.write(scores.model_dump_json(indent=2))
