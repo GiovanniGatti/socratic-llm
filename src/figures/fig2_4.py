@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     client = OpenAI(api_key=args.openai_api_key)
     cross_validations: List[CrossValidation] = []
-    for example in tqdm(human_eval):
+    for example in tqdm(human_eval.get_valid()):
         answer = example.output
         student = answer.split("Student")[0] if "Student" in answer else answer
 
@@ -119,10 +119,16 @@ if __name__ == "__main__":
 
     # FIGURE 4
     human_scores = Scores(
-        root=[Example(prompt=e.prompt, output=e.output, evaluation=e.human) for e in cross_validations]
+        root=[
+            Example(prompt=e.prompt, output=e.output, raw_evaluation="", evaluation_error=None, evaluation=e.human)
+            for e in cross_validations
+        ]
     )
     gpt4o_scores = Scores(
-        root=[Example(prompt=e.prompt, output=e.output, evaluation=e.gpt4o) for e in cross_validations]
+        root=[
+            Example(prompt=e.prompt, output=e.output, raw_evaluation="", evaluation_error=None, evaluation=e.gpt4o)
+            for e in cross_validations
+        ]
     )
     score_components = ["question?", "on topic?", "helpful?", "reveals answer?"]
     model_name = ["Human", "GPT-4o"]
