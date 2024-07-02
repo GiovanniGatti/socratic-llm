@@ -9,7 +9,7 @@ from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from data import Dataset, Example, Scores
-from tools import escape_template
+from tools import escape_template, safe_eval
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="GEN-FINETUNE")
