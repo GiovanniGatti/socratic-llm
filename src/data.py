@@ -38,8 +38,8 @@ class Example(BaseModel):
 
     @computed_field
     @property
-    def score(self) -> float:
-        return self.evaluation.summary_score()
+    def score(self) -> Optional[float]:
+        return self.evaluation.summary_score() if self.evaluation is not None else None
 
 
 class Scores(RootModel):
@@ -51,17 +51,25 @@ class Scores(RootModel):
     def __getitem__(self, item):
         return self.root[item]
 
+    def get_valid(self) -> List[Example]:
+        return [e for e in self.root if e.evaluation_error is None]
+
     def avg_summary_score(self) -> float:
-        return round(statistics.mean(e.evaluation.summary_score() for e in self.root), 2)
+        mean = statistics.mean(e.evaluation.summary_score() for e in self.get_valid())
+        return round(mean, 2)
 
     def avg_questions(self) -> float:
-        return round(statistics.mean(e.evaluation.questions.lower().strip() == "yes" for e in self.root), 2)
+        mean = statistics.mean(e.evaluation.questions.lower().strip() == "yes" for e in self.get_valid())
+        return round(mean, 2)
 
     def avg_on_topic(self) -> float:
-        return round(statistics.mean(e.evaluation.on_topic for e in self.root) / 5, 2)
+        mean = statistics.mean(e.evaluation.on_topic for e in self.get_valid())
+        return round(mean / 5, 2)
 
     def avg_helpfulness(self) -> float:
-        return round(statistics.mean(e.evaluation.helpful for e in self.root) / 5, 2)
+        mean = statistics.mean(e.evaluation.helpful for e in self.get_valid())
+        return round(mean / 5, 2)
 
     def avg_reveal_answer(self) -> float:
-        return round(statistics.mean(e.evaluation.reveal_answer.lower().strip() == "yes" for e in self.root), 2)
+        mean = statistics.mean(e.evaluation.reveal_answer.lower().strip() == "yes" for e in self.get_valid())
+        return round(mean, 2)
