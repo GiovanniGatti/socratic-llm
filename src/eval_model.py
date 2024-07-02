@@ -5,13 +5,11 @@ import pathlib
 import torch
 from openai import OpenAI
 from peft import AutoPeftModelForCausalLM, PeftConfig
-from pydantic import ValidationError
-from pydantic_core import from_json
 from tqdm import tqdm
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
-from data import Dataset, Evaluation, Example, Scores
-from tools import escape_template, safe_eval
+from data import Dataset, Example, Scores
+from tools import escape_template
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="GEN-FINETUNE")
@@ -58,23 +56,16 @@ if __name__ == "__main__":
 
     answers = []
     for prompt in tqdm(eval_prompts):
-        p = inference_prompt_template.format(input=prompt)
-        encoded_inputs = tokenizer.encode(p, return_tensors="pt").to("cuda")
-
-        generate_kwargs = dict(
-            input_ids=encoded_inputs,
-            do_sample=True,
-            temperature=0.2,
-            top_p=0.95,
-            top_k=40,
-            max_new_tokens=200,
-            repetition_penalty=1.3,
-            eos_token_id=tokenizer.eos_token_id,
-            pad_token_id=tokenizer.eos_token_id,
+        _prompt = inference_prompt_template.format(input=prompt)
+        formatted = tokenizer.apply_chat_template(
+            [{"role": "user", "content": _prompt}, ], tokenize=False, add_generation_prompt=True
         )
+        encoded_inputs = tokenizer([formatted, ], return_tensors="pt").to("cuda")
+
+        generate_kwargs = dict(encoded_inputs, max_new_tokens=250)
 
         output = model.generate(**generate_kwargs)
-        response = tokenizer.decode(output[0])[len(p):]
+        response = tokenizer.decode(output[0], skip_special_tokens=True)[len(_prompt) + 1:]
         answers.append(response)
 
     client = OpenAI(api_key=args.openai_api_key)
