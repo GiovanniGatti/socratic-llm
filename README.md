@@ -59,5 +59,5 @@ $  docker build -t socratic-llm .
 Then run it with (tip: don't forget to mount the GPU and script's input/output directories). For example,
 
 ```bash
-$ docker run --rm --gpus '"device=6"' -v /home/<user>/huggingface:/huggingface -e HF_HOME=/huggingface -v /home/<user>/socratic-llm/evaluations:/evaluations -v /home/<user>/socratic-llm/figures:/figures -it socratic-llm -m pipeline --openai-api-key xxx --evaluation-dir /evaluations --figures-dir /figures-dir
+$ docker run --rm --gpus '"device=6"' -v /home/<user>/huggingface:/huggingface -e HF_HOME=/huggingface -v /home/<user>/socratic-llm/evaluations:/evaluations -v /home/<user>/socratic-llm/figures:/figures -v /home/<user>/socratic-llm/dpo:/dpo -it socratic-llm -m pipeline --openai-api-key xxx --evaluation-dir /evaluations --figures-dir /figures --dpo-dir /dpo
 ```
