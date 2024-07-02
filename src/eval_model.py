@@ -6,6 +6,7 @@ import torch
 from openai import OpenAI
 from peft import AutoPeftModelForCausalLM, PeftConfig
 from tqdm import tqdm
+from tqdm.contrib import tzip
 from transformers import AutoTokenizer, AutoModelForCausalLM
 
 from data import Dataset, Example, Scores
@@ -70,7 +71,7 @@ if __name__ == "__main__":
 
     client = OpenAI(api_key=args.openai_api_key)
     scores = Scores()
-    for prompt, answer in tqdm(zip(eval_prompts, answers)):
+    for prompt, answer in tzip(eval_prompts, answers):
         student = answer.split("Student")[0] if "Student" in answer else answer
 
         raw_evaluation, error, evaluation = safe_eval(
