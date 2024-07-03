@@ -1,0 +1,91 @@
+import argparse
+import pathlib
+
+import torch
+from datasets import Dataset
+from transformers import AutoModelForCausalLM, AutoTokenizer
+from trl import DPOTrainer, DPOConfig
+
+from data import TrainDataset
+from tools import escape_template
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(prog="TRAIN")
+
+    parser.add_argument("--input", required=True, type=pathlib.Path, help="Path to seed dataset")
+    parser.add_argument("--inference-prompt", required=True, type=pathlib.Path, help="Path to the inference prompt")
+    parser.add_argument("--instruct-model", required=True, type=str, help="HF path to instruct model")
+    parser.add_argument("--output-dir", required=True, type=pathlib.Path, help="Path where to store model checkpoints")
+
+    args = parser.parse_args()
+
+    with open(args.inference_prompt, "r", encoding="utf-8") as file:
+        inference_prompt_template = escape_template(file.read())
+
+    with open(args.input, "r") as f:
+        dataset = TrainDataset.model_validate_json(f.read())
+
+    tlr_dataset = Dataset.from_dict({
+        "prompt": [
+            inference_prompt_template.format(input=i.prompt) for i in dataset.get_valid()
+        ],
+        "chosen": [
+            i.chosen for i in dataset.get_valid()
+        ],
+        "rejected": [
+            i.chosen for i in dataset.get_valid()
+        ]
+    })
+
+    model = AutoModelForCausalLM.from_pretrained(
+        args.instruct_model, torch_dtype=torch.bfloat16, trust_remote_code=True, attn_implementation="flash_attention_2"
+    )
+
+    model.config.use_cache = False
+
+    model_ref = AutoModelForCausalLM.from_pretrained(
+        args.instruct_model,
+        torch_dtype=torch.bfloat16,
+        device_map="cuda",
+        trust_remote_code=True,
+    )
+
+    tokenizer = AutoTokenizer.from_pretrained(args.instruct_model)
+
+    training_args = DPOConfig(
+        per_device_train_batch_size=1,
+        gradient_accumulation_steps=4,
+        gradient_checkpointing=True,
+        max_grad_norm=0.3,
+        # num_train_epochs=32,
+        num_train_epochs=1,
+        save_steps=100,
+        learning_rate=2e-4,
+        bf16=True,
+        save_total_limit=3,
+        logging_steps=10,
+        output_dir=args.output_dir,
+        optim="paged_adamw_32bit",
+        lr_scheduler_type="cosine",
+        warmup_ratio=0.05,
+        remove_unused_columns=False
+    )
+
+    dpo_trainer = DPOTrainer(
+        model,
+        model_ref,
+        args=training_args,
+        beta=0.1,
+        train_dataset=tlr_dataset,
+        tokenizer=tokenizer,
+        max_prompt_length=4096,
+        max_length=4096,
+    )
+
+    dpo_trainer.train()
+
+    final_checkpoint = pathlib.Path(args.output_dir) / "weights"
+
+    dpo_trainer.save_model(final_checkpoint)
+    dpo_trainer.model.save_pretrained(final_checkpoint)
+    tokenizer.save_pretrained(final_checkpoint)

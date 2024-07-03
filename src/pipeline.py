@@ -8,6 +8,10 @@ if __name__ == "__main__":
     parser.add_argument("--openai-api-key", required=False, type=str, help="Open AI api key")
     parser.add_argument("--evaluation-dir", required=True, type=str, help="Path where to store assessments")
     parser.add_argument("--figures-dir", required=True, type=str, help="Path where to store figures")
+    parser.add_argument("--dpo-dir", required=True, type=str,
+                        help="Path where to store DPO training data and model weights")
+    parser.add_argument("--instruct-model", default="microsoft/Phi-3-mini-128k-instruct", type=str,
+                        help="HF name of instruct model to finetune")
     parser.add_argument("--use-cache", action="store_true", help="Don't run subprocess if output files exist")
     args = parser.parse_args()
 
@@ -17,6 +21,18 @@ if __name__ == "__main__":
 
     if OPENAI_API_KEY is None:
         raise ValueError("Must provide OPENAI_API_KEY either through command line or environment variable")
+
+    for dataset in ("mathdial", "tutorchat"):
+        target_dir = Path(f"{args.dpo_dir}/{dataset}")
+        target_dir.mkdir(0o755, exist_ok=True)
+        if not args.use_cache or not Path(f"{args.dpo_dir}/{dataset}/train_dataset.json").exists():
+            subprocess.run(["python", "-m", "gen_train_dataset",
+                            "--input", f"./datasets/{dataset}.json",
+                            "--inference-prompt", "./templates/inference.txt",
+                            "--eval-prompt", "./templates/judge_llm.txt",
+                            "--instruct-model", args.instruct_model,
+                            "--openai-api-key", OPENAI_API_KEY,
+                            "--output", f"{args.dpo_dir}/{dataset}/train_dataset.json"])
 
     for dataset in ("mathdial", "debugging", "tutorchat"):
         if not args.use_cache or not Path(f"{args.evaluation_dir}/{dataset}_finetuned.json").exists():

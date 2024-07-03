@@ -73,3 +73,53 @@ class Scores(RootModel):
     def avg_reveal_answer(self) -> float:
         mean = statistics.mean(e.evaluation.reveal_answer.lower().strip() == "yes" for e in self.get_valid())
         return round(mean, 2)
+
+
+class DPOEvaluation(BaseModel):
+    output: str
+    raw_evaluation: str
+    evaluation_error: Optional[str]
+    evaluation: Optional[Evaluation]
+
+
+class DPOExample(BaseModel):
+    prompt: str
+    a: DPOEvaluation
+    b: DPOEvaluation
+
+    @computed_field
+    @property
+    def chosen(self) -> Optional[str]:
+        if self.a.evaluation_error is not None or self.b.evaluation_error is not None:
+            return None
+        a_score = self.a.evaluation.summary_score()
+        b_score = self.b.evaluation.summary_score()
+
+        chosen: DPOEvaluation
+        chosen = self.a if a_score >= b_score else self.b
+        return chosen.output
+
+    @computed_field
+    @property
+    def rejected(self) -> Optional[str]:
+        if self.a.evaluation_error is not None or self.b.evaluation_error is not None:
+            return None
+        a_score = self.a.evaluation.summary_score()
+        b_score = self.b.evaluation.summary_score()
+
+        rejected: DPOEvaluation
+        rejected = self.b if a_score >= b_score else self.a
+        return rejected.output
+
+
+class TrainDataset(RootModel):
+    root: List[DPOExample] = []
+
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+    def get_valid(self) -> List[Example]:
+        return [e for e in self.root if e.a.evaluation_error is None and e.b.evaluation_error is None]
