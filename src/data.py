@@ -81,35 +81,31 @@ class DPOEvaluation(BaseModel):
     evaluation_error: Optional[str]
     evaluation: Optional[Evaluation]
 
+    def summary_score(self) -> float:
+        return self.evaluation.summary_score() if self.evaluation_error is None else -1.
+
 
 class DPOExample(BaseModel):
     prompt: str
-    a: DPOEvaluation
-    b: DPOEvaluation
+    chosen_eval: DPOEvaluation
+    rejected_eval: DPOEvaluation
+    all_evaluations: List[DPOEvaluation] = []
 
     @computed_field
     @property
     def chosen(self) -> Optional[str]:
-        if self.a.evaluation_error is not None or self.b.evaluation_error is not None:
+        if self.chosen_eval.evaluation_error is not None:
             return None
-        a_score = self.a.evaluation.summary_score()
-        b_score = self.b.evaluation.summary_score()
 
-        chosen: DPOEvaluation
-        chosen = self.a if a_score >= b_score else self.b
-        return chosen.output
+        return self.chosen_eval.output
 
     @computed_field
     @property
     def rejected(self) -> Optional[str]:
-        if self.a.evaluation_error is not None or self.b.evaluation_error is not None:
+        if self.rejected_eval.evaluation_error is not None:
             return None
-        a_score = self.a.evaluation.summary_score()
-        b_score = self.b.evaluation.summary_score()
 
-        rejected: DPOEvaluation
-        rejected = self.b if a_score >= b_score else self.a
-        return rejected.output
+        return self.rejected_eval.output
 
 
 class TrainDataset(RootModel):

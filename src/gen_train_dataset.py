@@ -1,7 +1,7 @@
 import argparse
 import os
 import pathlib
-from typing import Tuple, List
+from typing import List
 
 import torch
 from openai import OpenAI
@@ -44,7 +44,7 @@ if __name__ == "__main__":
 
     tokenizer = AutoTokenizer.from_pretrained(args.instruct_model, trust_remote_code=True)
 
-    answers: List[Tuple[str, str]] = []
+    answers: List[List[str]] = []
     for prompt in tqdm(eval_prompts):
         _prompt = inference_prompt_template.format(input=prompt)
         formatted = tokenizer.apply_chat_template(
@@ -54,37 +54,40 @@ if __name__ == "__main__":
 
         generate_kwargs = dict(encoded_inputs, max_new_tokens=250, do_sample=True, temperature=1.2)
 
-        output = model.generate(**generate_kwargs)
-        response_a = tokenizer.decode(output[0], skip_special_tokens=True)[len(_prompt) + 1:]
+        collected = []
+        for _ in range(5):
+            output = model.generate(**generate_kwargs)
+            response = tokenizer.decode(output[0], skip_special_tokens=True)[len(_prompt) + 1:]
+            collected.append(response)
 
-        output = model.generate(**generate_kwargs)
-        response_b = tokenizer.decode(output[0], skip_special_tokens=True)[len(_prompt) + 1:]
-        answers.append((response_a, response_b))
+        answers.append(collected)
 
     client = OpenAI(api_key=args.openai_api_key)
     train_dataset = TrainDataset()
-    for prompt, (answer_a, answer_b) in tzip(eval_prompts, answers):
-        _answer_a = answer_a.split("Student")[0] if "Student" in answer_a else answer_a
-        _answer_b = answer_b.split("Student")[0] if "Student" in answer_b else answer_b
+    for prompt, collected in tzip(eval_prompts, answers):
 
-        raw_evaluation_a, error_a, evaluation_a = safe_eval(
-            client, judge_llm_prompt.format(conversation=prompt, answer=_answer_a)
-        )
+        dpo_evaluations = []
+        for _answer in collected:
+            raw_evaluation, error, evaluation = safe_eval(
+                client, judge_llm_prompt.format(conversation=prompt, answer=_answer)
+            )
+            dpo_evaluations.append(
+                DPOEvaluation(
+                    output=_answer, raw_evaluation=raw_evaluation, evaluation_error=error, evaluation=evaluation
+                )
+            )
 
-        raw_evaluation_b, error_b, evaluation_b = safe_eval(
-            client, judge_llm_prompt.format(conversation=prompt, answer=_answer_b)
-        )
+        dpo_evaluations.sort(key=lambda e: e.summary_score(), reverse=True)
+
+        chosen = dpo_evaluations[0]
+
+        i = 1
+        while i < len(dpo_evaluations) and dpo_evaluations[i].summary_score() >= chosen.summary_score():
+            i += 1
+        rejected = dpo_evaluations[i]
 
         train_dataset.root.append(
-            DPOExample(
-                prompt=prompt,
-                a=DPOEvaluation(
-                    output=_answer_a, raw_evaluation=raw_evaluation_a, evaluation_error=error_a, evaluation=evaluation_a
-                ),
-                b=DPOEvaluation(
-                    output=_answer_b, raw_evaluation=raw_evaluation_b, evaluation_error=error_b, evaluation=evaluation_b
-                ),
-            )
+            DPOExample(prompt=prompt, chosen_eval=chosen, rejected_eval=rejected, all_evaluations=dpo_evaluations)
         )
 
     with open(args.output, "w") as f:
