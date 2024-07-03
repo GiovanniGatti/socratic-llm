@@ -53,7 +53,7 @@ if __name__ == "__main__":
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
         max_grad_norm=0.3,
-        num_train_epochs=1,
+        num_train_epochs=64,
         learning_rate=2e-4,
         save_total_limit=3,
         logging_steps=10,
