@@ -36,7 +36,7 @@ if __name__ == "__main__":
     evaluation_dir.mkdir(exist_ok=True)
     figures_dir.mkdir(exist_ok=True)
 
-    # Generate training data for DPO
+    print(" ====== Generating DPO training datasets ====== ")
     for dataset in ("mathdial", "tutorchat"):
         target_dir = dpo_dir / dataset
         target_dir.mkdir(exist_ok=True)
@@ -49,7 +49,7 @@ if __name__ == "__main__":
                             "--openai-api-key", OPENAI_API_KEY,
                             "--output", f"{target_dir}/train_dataset.json"])
 
-    # Perform DPO training
+    print(" ====== Finetuning model with DPO ====== ")
     for dataset in ("mathdial", "tutorchat"):
         target_dir = dpo_dir / dataset
         target_dir.mkdir(exist_ok=True)
@@ -71,7 +71,7 @@ if __name__ == "__main__":
                             "--checkpoints-dir", f"{checkpoint_dir}",
                             "--model-dir", f"{model_dir}"])
 
-    # Assess model quality
+    print(" ====== Accessing model quality ====== ")
     for dataset in ("mathdial", "debugging", "tutorchat"):
         target_dir = evaluation_dir / dataset
         target_dir.mkdir(exist_ok=True)
@@ -116,7 +116,7 @@ if __name__ == "__main__":
                             "--openai-api-key", OPENAI_API_KEY,
                             "--output", f"{gpt4o}"])
 
-    # Analysis
+    print(" ====== Generating analysis ====== ")
     if not len(list(figures_dir.glob("fig[2-4].svg"))) > 0:
         subprocess.run(["python", "-m", "figures.fig2_4",
                         "--humans", f"./datasets/mathdial_human_eval.json",
