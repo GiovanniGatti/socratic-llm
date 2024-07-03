@@ -22,7 +22,6 @@ if __name__ == "__main__":
                         help="Path to the judge evaluation prompt")
     parser.add_argument("--openai-api-key", required=True, type=str, help="Open AI api key")
     parser.add_argument("--model-path", required=True, type=str, help="HF model name or path to model weights")
-    parser.add_argument("--without-lora-adapter", action="store_true", help="Disable LoRA adapter (no finetuning)")
     parser.add_argument("--output", required=True, type=pathlib.Path, help="Path to GPT-4o eval")
     args = parser.parse_args()
 
