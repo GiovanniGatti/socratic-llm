@@ -82,7 +82,7 @@ if __name__ == "__main__":
         chosen = dpo_evaluations[0]
 
         i = 1
-        while i < len(dpo_evaluations) and dpo_evaluations[i].summary_score() >= chosen.summary_score():
+        while i < len(dpo_evaluations) - 1 and dpo_evaluations[i].summary_score() >= chosen.summary_score():
             i += 1
         rejected = dpo_evaluations[i]
 
