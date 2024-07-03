@@ -15,7 +15,9 @@ if __name__ == "__main__":
     parser.add_argument("--input", required=True, type=pathlib.Path, help="Path to seed dataset")
     parser.add_argument("--inference-prompt", required=True, type=pathlib.Path, help="Path to the inference prompt")
     parser.add_argument("--instruct-model", required=True, type=str, help="HF path to instruct model")
-    parser.add_argument("--output-dir", required=True, type=pathlib.Path, help="Path where to store model checkpoints")
+    parser.add_argument("--checkpoints-dir", required=True, type=pathlib.Path,
+                        help="Path where to store training checkpoints")
+    parser.add_argument("--model-dir", required=True, type=pathlib.Path, help="Path where to store finetuned model")
 
     args = parser.parse_args()
 
@@ -55,15 +57,12 @@ if __name__ == "__main__":
     training_args = DPOConfig(
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
-        gradient_checkpointing=True,
         max_grad_norm=0.3,
         num_train_epochs=32,
-        save_steps=100,
         learning_rate=2e-4,
-        bf16=True,
         save_total_limit=3,
         logging_steps=10,
-        output_dir=args.output_dir,
+        output_dir=args.checkpoints_dir,
         optim="paged_adamw_32bit",
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
@@ -83,8 +82,7 @@ if __name__ == "__main__":
 
     dpo_trainer.train()
 
-    final_checkpoint = pathlib.Path(args.output_dir) / "weights"
-
-    dpo_trainer.save_model(final_checkpoint)
-    dpo_trainer.model.save_pretrained(final_checkpoint)
-    tokenizer.save_pretrained(final_checkpoint)
+    output_dir = pathlib.Path(args.model_dir)
+    dpo_trainer.save_model(output_dir)
+    dpo_trainer.model.save_pretrained(output_dir)
+    tokenizer.save_pretrained(output_dir)

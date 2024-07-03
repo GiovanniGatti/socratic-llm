@@ -1,15 +1,13 @@
 import argparse
 import os
+import shutil
 import subprocess
 from pathlib import Path
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(prog="PIPELINE")
     parser.add_argument("--openai-api-key", required=False, type=str, help="Open AI api key")
-    parser.add_argument("--evaluation-dir", required=True, type=str, help="Path where to store assessments")
-    parser.add_argument("--figures-dir", required=True, type=str, help="Path where to store figures")
-    parser.add_argument("--dpo-dir", required=True, type=str,
-                        help="Path where to store DPO training data and model weights")
+    parser.add_argument("--output-dir", required=True, type=str, help="Path where to store pipeline outputs")
     parser.add_argument("--instruct-model", default="microsoft/Phi-3-mini-4k-instruct", type=str,
                         help="HF name of instruct model to finetune")
     parser.add_argument("--use-cache", action="store_true", help="Don't run subprocess if output files exist")
@@ -22,82 +20,133 @@ if __name__ == "__main__":
     if OPENAI_API_KEY is None:
         raise ValueError("Must provide OPENAI_API_KEY either through command line or environment variable")
 
+    output_dir = Path(args.output_dir)
+    if not args.use_cache:
+        for child in output_dir.iterdir():
+            if child.is_file():
+                child.unlink()
+            elif child.is_dir():
+                shutil.rmtree(child)
+
+    dpo_dir = output_dir / "dpo"
+    evaluation_dir = output_dir / "evaluation"
+    figures_dir = output_dir / "figures"
+
+    dpo_dir.mkdir(exist_ok=True)
+    evaluation_dir.mkdir(exist_ok=True)
+    figures_dir.mkdir(exist_ok=True)
+
+    # Generate training data for DPO
     for dataset in ("mathdial", "tutorchat"):
-        target_dir = Path(f"{args.dpo_dir}/{dataset}")
-        target_dir.mkdir(0o755, exist_ok=True)
-        if not args.use_cache or not Path(f"{args.dpo_dir}/{dataset}/train_dataset.json").exists():
+        target_dir = dpo_dir / dataset
+        target_dir.mkdir(exist_ok=True)
+        if not (target_dir / "train_dataset.json").exists():
             subprocess.run(["python", "-m", "gen_train_dataset",
                             "--input", f"./datasets/{dataset}.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--instruct-model", args.instruct_model,
                             "--openai-api-key", OPENAI_API_KEY,
-                            "--output", f"{args.dpo_dir}/{dataset}/train_dataset.json"])
+                            "--output", f"{target_dir}/train_dataset.json"])
 
+    # Perform DPO training
+    for dataset in ("mathdial", "tutorchat"):
+        target_dir = dpo_dir / dataset
+        target_dir.mkdir(exist_ok=True)
+
+        checkpoint_dir = target_dir / "checkpoints"
+        model_dir = target_dir / "model"
+
+        if not model_dir.exists():
+            if checkpoint_dir.exists():
+                shutil.rmtree(checkpoint_dir)
+
+            model_dir.mkdir()
+            checkpoint_dir.mkdir()
+
+            subprocess.run(["python", "-m", "train",
+                            "--input", f"./datasets/{dataset}.json",
+                            "--inference-prompt", "./templates/inference.txt",
+                            "--instruct-model", args.instruct_model,
+                            "--checkpoints-dir", f"{checkpoint_dir}",
+                            "--model-dir", f"{model_dir}"])
+
+    # Assess model quality
     for dataset in ("mathdial", "debugging", "tutorchat"):
-        if not args.use_cache or not Path(f"{args.evaluation_dir}/{dataset}_finetuned.json").exists():
+        target_dir = evaluation_dir / dataset
+        target_dir.mkdir(exist_ok=True)
+
+        from_finetuned_with_tutorchat = target_dir / "from_finetuned_with_tutorchat.json"
+        from_finetuned_with_mathdial = target_dir / "from_finetuned_with_mathdial.json"
+        base = target_dir / "base.json"
+        gpt4o = target_dir / "gpt4o.json"
+
+        if not from_finetuned_with_tutorchat.exists():
             subprocess.run(["python", "-m", "eval_model",
                             "--input", f"./datasets/{dataset}.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
-                            "--peft-adapter", "giovanni-gatti-pinheiro/socratic-llm",
+                            "--model-path", f"{dpo_dir / 'tutorchat' / 'model'}",
                             "--openai-api-key", OPENAI_API_KEY,
-                            "--output", f"{args.evaluation_dir}/{dataset}_finetuned.json"])
+                            "--output", f"{from_finetuned_with_tutorchat}"])
 
-        if not args.use_cache or not Path(f"{args.evaluation_dir}/{dataset}_finetuned_with_mathdial.json").exists():
+        if not from_finetuned_with_mathdial.exists():
             subprocess.run(["python", "-m", "eval_model",
                             "--input", f"./datasets/{dataset}.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
-                            "--peft-adapter", "giovanni-gatti-pinheiro/socratic-llm-mathdial",
+                            "--model-path", f"{dpo_dir / 'mathdial' / 'model'}",
                             "--openai-api-key", OPENAI_API_KEY,
-                            "--output", f"{args.evaluation_dir}/{dataset}_finetuned_with_mathdial.json"])
+                            "--output", f"{from_finetuned_with_mathdial}"])
 
-        if not args.use_cache or not Path(f"{args.evaluation_dir}/{dataset}_base.json").exists():
+        if not base.exists():
             subprocess.run(["python", "-m", "eval_model",
                             "--input", f"./datasets/{dataset}.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--openai-api-key", OPENAI_API_KEY,
-                            "--peft-adapter", "giovanni-gatti-pinheiro/socratic-llm",
-                            "--without-lora-adapter",
-                            "--output", f"{args.evaluation_dir}/{dataset}_base.json"])
+                            "--peft-adapter", args.instruct_model,
+                            "--output", f"{base}"])
 
-        if not args.use_cache or not Path(f"{args.evaluation_dir}/{dataset}_gpt4o.json").exists():
+        if not gpt4o.exists():
             subprocess.run(["python", "-m", "eval_gpt_4o",
                             "--input", f"./datasets/{dataset}.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--openai-api-key", OPENAI_API_KEY,
-                            "--output", f"{args.evaluation_dir}/{dataset}_gpt4o.json"])
+                            "--output", f"{gpt4o}"])
 
-    if not args.use_cache or not len(list(Path(f"{args.figures_dir}").glob("fig[2-4].svg"))) > 0:
+    # Analysis
+    if not len(list(figures_dir.glob("fig[2-4].svg"))) > 0:
         subprocess.run(["python", "-m", "figures.fig2_4",
                         "--humans", f"./datasets/mathdial_human_eval.json",
                         "--eval-prompt", "./templates/judge_llm.txt",
                         "--openai-api-key", OPENAI_API_KEY,
-                        "--output", f"{args.figures_dir}"])
+                        "--output", f"{figures_dir}"])
 
     subprocess.run(["python", "-m", "figures.fig5_6",
-                    "--mathdial-finetuned", f"{args.evaluation_dir}/mathdial_finetuned.json",
-                    "--mathdial-base", f"{args.evaluation_dir}/mathdial_base.json",
-                    "--mathdial-gpt4o", f"{args.evaluation_dir}/mathdial_gpt4o.json",
-                    "--debugging-finetuned", f"{args.evaluation_dir}/debugging_finetuned.json",
-                    "--debugging-base", f"{args.evaluation_dir}/debugging_base.json",
-                    "--debugging-gpt4o", f"{args.evaluation_dir}/debugging_gpt4o.json",
-                    "--tutorchat-finetuned", f"{args.evaluation_dir}/tutorchat_finetuned.json",
-                    "--tutorchat-base", f"{args.evaluation_dir}/tutorchat_base.json",
-                    "--tutorchat-gpt4o", f"{args.evaluation_dir}/tutorchat_gpt4o.json",
-                    "--output-dir", f"{args.figures_dir}"])
+                    "--mathdial-finetuned", f"{evaluation_dir}/mathdial/from_finetuned_with_tutorchat.json",
+                    "--mathdial-base", f"{evaluation_dir}/mathdial/base.json",
+                    "--mathdial-gpt4o", f"{evaluation_dir}/mathdial/gpt4o.json",
+                    "--debugging-finetuned", f"{evaluation_dir}/debugging/from_finetuned_with_tutorchat.json",
+                    "--debugging-base", f"{evaluation_dir}/debugging/base.json",
+                    "--debugging-gpt4o", f"{evaluation_dir}/debugging/gpt4o.json",
+                    "--tutorchat-finetuned", f"{evaluation_dir}/tutorchat/from_finetuned_with_tutorchat.json",
+                    "--tutorchat-base", f"{evaluation_dir}/tutorchat/base.json",
+                    "--tutorchat-gpt4o", f"{evaluation_dir}/tutorchat/gpt4o.json",
+                    "--output-dir", f"{figures_dir}"])
 
     subprocess.run(["python", "-m", "figures.table",
-                    "--mathdial-finetuned-with-tutorchat", f"{args.evaluation_dir}/mathdial_finetuned.json",
-                    "--debugging-finetuned-with-tutorchat", f"{args.evaluation_dir}/debugging_finetuned.json",
-                    "--tutorchat-finetuned-with-tutorchat", f"{args.evaluation_dir}/tutorchat_finetuned.json",
+                    "--mathdial-finetuned-with-tutorchat",
+                    f"{evaluation_dir}/mathdial/from_finetuned_with_tutorchat.json",
+                    "--debugging-finetuned-with-tutorchat",
+                    f"{evaluation_dir}/debugging/from_finetuned_with_tutorchat.json",
+                    "--tutorchat-finetuned-with-tutorchat",
+                    f"{evaluation_dir}/tutorchat/from_finetuned_with_tutorchat.json",
                     "--mathdial-finetuned-with-mathdial",
-                    f"{args.evaluation_dir}/mathdial_finetuned_with_mathdial.json",
+                    f"{evaluation_dir}/mathdial/from_finetuned_with_mathdial.json",
                     "--debugging-finetuned-with-mathdial",
-                    f"{args.evaluation_dir}/debugging_finetuned_with_mathdial.json",
+                    f"{evaluation_dir}/debugging/from_finetuned_with_mathdial.json",
                     "--tutorchat-finetuned-with-mathdial",
-                    f"{args.evaluation_dir}/tutorchat_finetuned_with_mathdial.json",
-                    "--output-dir", f"{args.figures_dir}"])
+                    f"{evaluation_dir}/tutorchat/from_finetuned_with_mathdial.json",
+                    "--output-dir", f"{figures_dir}"])
