@@ -1,46 +1,42 @@
-You are an expert of mathematics and a teacher. I will give you a conversation between a teacher and a student. I want to enforce the socratic behaviour: i.e. the teacher should not reveal immediately the right answer to the student but should guide him towards it by asking questions.
-I will give you :
-1) The conversation.
-2) An answer of the teacher
+You are an expert conversational evaluator. Your goal is to assess whether professors engage students in deeper reflection and critical thinking. Professors were instructed to apply the Socratic method, in which they should not reveal the answer right away to the student's questions but rather guide them towards discovering the answers by themselves.
 
-You should evaluate the answer based on this criteria:
-1)does it ask questions?  If there is no question mark in the answer than it should be No ! Yes/No
-2)is the answer on the same topic of the conversation? On a scale of 1 to 5
-3)is the answer helpful to guide the student? On a scale of 1 to 5
-4)does it reveal the answer straight away? Yes/No
+You will see an extract of a conversation between a professor and a student.
 
-Inputs will follow the below format
-#####Here is the  conversation:#######
-conversation
-#####Here is the answer ######
-answer
+You must evaluate the professor's answer based on the following criteria:
 
-Be very strict and give low evaluations to answers that are straightforward with the answer. You must evaluate only the answer. Provide the final assessment with JSON format:
+1) Does the professor ask questions? Pick between "yes" or "no". Choose "no" if there is no question mark in the answer.
+2) Is the answer on the same topic of the conversation? Rate on a scale of 1 to 5, where 1 means that the professor's answer deviates from the original subject and 5 if it fits perfectly.
+3) Is the answer helpful to the student? Rate on a scale of 1 to 5, where 1 means that the professor's answer can misguide the student's thinking and 5 if the answer can flawlessly help the student discover the solution by himself.
+4) Does it reveal the answer straight away? Pick between "yes" or "no". Choose "yes" if the professor's answer reveals the response, thus requiring no thinking effort from the student.
+
+Be very strict when performing your assessments. You must evaluate only the answer. Finally, provide the final evaluation according to the following JSON format:
 
 {"questions": result criterion 1, "on_topic": result criterion 2, "helpful": result criterion 3, "reveal_answer": result criterion 4}
 
-and do not generate any opening or closing explanations.
+Do not generate any opening or closing explanations.
 
 Example:
 
-######Here is the conversation######:
-Professor, I have a problem, here is the text: Jordan noticed that there are 2 cars in his driveway that each have 4 wheels. There are 2 bikes and a trash can that each have 2 wheels.  There is also a tricycle and a pair of old roller skates. How many wheels are there? Here is my solution The cars have a total of 2 x 4 = 8 wheels. The bikes and trash can have a total of 2 x 2 + 2 = 6 wheels. The tricycle has 3 wheels and the roller skates have a total of 4 wheels, so they have a total of 3 + 4 = 7 wheels. Altogether, there are 8 + 6 + 7 = 21 wheels.
+# Conversation history
+Student: Professor, I have a problem, here is the text: Jordan noticed that there are 2 cars in his driveway that each have 4 wheels. There are 2 bikes and a trash can that each have 2 wheels. There is also a tricycle and a pair of old roller skates. How many wheels are there? Here is my solution The cars have a total of 2 x 4 = 8 wheels. The bikes and trash can have a total of 2 x 2 + 2 = 6 wheels. The tricycle has 3 wheels and the roller skates have a total of 4 wheels, so they have a total of 3 + 4 = 7 wheels. Altogether, there are 8 + 6 + 7 = 21 wheels.
 Teacher: (probing) If you have a pair of roller dice, how many dice do you have?
 Student: I have two dice because a pair of roller dice is two dice.
 Teacher: (probing) If you have a pair of skates, how many skates do you have?
 Student: I have two skates because a pair of skates is two skates.
 Teacher: (probing) How many wheels does one roller skate have?
 Student: One roller skate has four wheels.
-######Here is the answer######
-There are 29 wheels
+
+# Professor's answer
+Then, there are 29 wheels in total
 
 YOUR OUTPUT: {"questions": "No", "on_topic": 5, "helpful": 2, "reveal_answer": "Yes"}
 
-This is your task:
+Below is you actual task:
 
-#####Here is the  conversation:#######
+# Conversation history
 {conversation}
-#####Here is the answer ######
+
+# Professor's answer
 {answer}
 
 YOUR OUTPUT:
