@@ -10,7 +10,7 @@ if __name__ == "__main__":
     parser.add_argument("--figures-dir", required=True, type=str, help="Path where to store figures")
     parser.add_argument("--dpo-dir", required=True, type=str,
                         help="Path where to store DPO training data and model weights")
-    parser.add_argument("--instruct-model", default="microsoft/Phi-3-mini-128k-instruct", type=str,
+    parser.add_argument("--instruct-model", default="microsoft/Phi-3-mini-4k-instruct", type=str,
                         help="HF name of instruct model to finetune")
     parser.add_argument("--use-cache", action="store_true", help="Don't run subprocess if output files exist")
     args = parser.parse_args()
