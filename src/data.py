@@ -118,4 +118,7 @@ class TrainDataset(RootModel):
         return self.root[item]
 
     def get_valid(self) -> List[Example]:
-        return [e for e in self.root if e.a.evaluation_error is None and e.b.evaluation_error is None]
+        return [
+            e for e in self.root
+            if e.chosen_eval.evaluation_error is None and e.rejected_eval.evaluation_error is None
+        ]

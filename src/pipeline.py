@@ -57,15 +57,15 @@ if __name__ == "__main__":
         checkpoint_dir = target_dir / "checkpoints"
         model_dir = target_dir / "model"
 
-        if not model_dir.exists():
+        if not model_dir.exists() or not any(model_dir.iterdir()):
             if checkpoint_dir.exists():
                 shutil.rmtree(checkpoint_dir)
 
-            model_dir.mkdir()
+            model_dir.mkdir(exist_ok=True)
             checkpoint_dir.mkdir()
 
             subprocess.run(["python", "-m", "train",
-                            "--input", f"./datasets/{dataset}.json",
+                            "--input", f"{target_dir}/train_dataset.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--instruct-model", args.instruct_model,
                             "--checkpoints-dir", f"{checkpoint_dir}",
@@ -105,7 +105,7 @@ if __name__ == "__main__":
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--openai-api-key", OPENAI_API_KEY,
-                            "--peft-adapter", args.instruct_model,
+                            "--model-path", args.instruct_model,
                             "--output", f"{base}"])
 
         if not gpt4o.exists():

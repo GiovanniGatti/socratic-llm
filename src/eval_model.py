@@ -4,7 +4,6 @@ import pathlib
 
 import torch
 from openai import OpenAI
-from peft import PeftConfig
 from tqdm import tqdm
 from tqdm.contrib import tzip
 from transformers import AutoTokenizer, AutoModelForCausalLM
@@ -38,6 +37,7 @@ if __name__ == "__main__":
         args.model_path,
         torch_dtype=torch.bfloat16,
         trust_remote_code=True,
+        device_map="cuda",
     )
     tokenizer = AutoTokenizer.from_pretrained(args.model_path, trust_remote_code=True)
 

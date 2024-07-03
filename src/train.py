@@ -40,16 +40,11 @@ if __name__ == "__main__":
     })
 
     model = AutoModelForCausalLM.from_pretrained(
-        args.instruct_model, torch_dtype=torch.bfloat16, trust_remote_code=True, attn_implementation="flash_attention_2"
+        args.instruct_model, torch_dtype=torch.bfloat16, trust_remote_code=True
     )
 
-    model.config.use_cache = False
-
     model_ref = AutoModelForCausalLM.from_pretrained(
-        args.instruct_model,
-        torch_dtype=torch.bfloat16,
-        device_map="cuda",
-        trust_remote_code=True,
+        args.instruct_model, torch_dtype=torch.bfloat16, device_map="cuda", trust_remote_code=True,
     )
 
     tokenizer = AutoTokenizer.from_pretrained(args.instruct_model)
@@ -58,7 +53,7 @@ if __name__ == "__main__":
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
         max_grad_norm=0.3,
-        num_train_epochs=32,
+        num_train_epochs=1,
         learning_rate=2e-4,
         save_total_limit=3,
         logging_steps=10,
@@ -66,7 +61,9 @@ if __name__ == "__main__":
         optim="paged_adamw_32bit",
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
-        remove_unused_columns=False
+        remove_unused_columns=False,
+        max_prompt_length=4096,
+        max_length=4096,
     )
 
     dpo_trainer = DPOTrainer(
@@ -76,8 +73,6 @@ if __name__ == "__main__":
         beta=0.1,
         train_dataset=tlr_dataset,
         tokenizer=tokenizer,
-        max_prompt_length=4096,
-        max_length=4096,
     )
 
     dpo_trainer.train()
