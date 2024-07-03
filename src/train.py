@@ -40,11 +40,11 @@ if __name__ == "__main__":
     })
 
     model = AutoModelForCausalLM.from_pretrained(
-        args.instruct_model, torch_dtype=torch.bfloat16, trust_remote_code=True
+        args.instruct_model, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True
     )
 
     model_ref = AutoModelForCausalLM.from_pretrained(
-        args.instruct_model, torch_dtype=torch.bfloat16, device_map="cuda", trust_remote_code=True,
+        args.instruct_model, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True,
     )
 
     tokenizer = AutoTokenizer.from_pretrained(args.instruct_model)
