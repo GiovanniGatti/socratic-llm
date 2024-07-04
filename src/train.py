@@ -62,8 +62,7 @@ if __name__ == "__main__":
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
         remove_unused_columns=False,
-        max_prompt_length=4096,
-        max_length=4096,
+        tf32=True,
     )
 
     dpo_trainer = DPOTrainer(
