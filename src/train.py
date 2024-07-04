@@ -43,7 +43,7 @@ if __name__ == "__main__":
         args.instruct_model, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True
     )
 
-    model_ref = AutoModelForCausalLM.from_pretrained(
+    ref_model = AutoModelForCausalLM.from_pretrained(
         args.instruct_model, torch_dtype=torch.bfloat16, device_map="auto", trust_remote_code=True,
     )
 
@@ -53,7 +53,7 @@ if __name__ == "__main__":
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
         max_grad_norm=0.3,
-        num_train_epochs=64,
+        num_train_epochs=16,
         learning_rate=2e-4,
         save_total_limit=3,
         logging_steps=10,
@@ -62,12 +62,12 @@ if __name__ == "__main__":
         lr_scheduler_type="cosine",
         warmup_ratio=0.05,
         remove_unused_columns=False,
-        tf32=True,
+        bf16=True
     )
 
     dpo_trainer = DPOTrainer(
-        model,
-        model_ref,
+        model=model,
+        ref_model=ref_model,
         args=training_args,
         beta=0.1,
         train_dataset=tlr_dataset,
