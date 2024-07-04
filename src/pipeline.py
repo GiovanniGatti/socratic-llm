@@ -42,7 +42,7 @@ if __name__ == "__main__":
         target_dir.mkdir(exist_ok=True)
         if not (target_dir / "train_dataset.json").exists():
             subprocess.run(["python", "-m", "gen_train_dataset",
-                            "--input", f"./datasets/{dataset}.json",
+                            "--input", f"./datasets/{dataset}_train.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--instruct-model", args.instruct_model,
@@ -83,7 +83,7 @@ if __name__ == "__main__":
 
         if not from_finetuned_with_tutorchat.exists():
             subprocess.run(["python", "-m", "eval_model",
-                            "--input", f"./datasets/{dataset}.json",
+                            "--input", f"./datasets/{dataset}_test.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--model-path", f"{dpo_dir / 'tutorchat' / 'model'}",
@@ -92,7 +92,7 @@ if __name__ == "__main__":
 
         if not from_finetuned_with_mathdial.exists():
             subprocess.run(["python", "-m", "eval_model",
-                            "--input", f"./datasets/{dataset}.json",
+                            "--input", f"./datasets/{dataset}_test.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--model-path", f"{dpo_dir / 'mathdial' / 'model'}",
@@ -101,7 +101,7 @@ if __name__ == "__main__":
 
         if not base.exists():
             subprocess.run(["python", "-m", "eval_model",
-                            "--input", f"./datasets/{dataset}.json",
+                            "--input", f"./datasets/{dataset}_test.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--openai-api-key", OPENAI_API_KEY,
@@ -110,7 +110,7 @@ if __name__ == "__main__":
 
         if not gpt4o.exists():
             subprocess.run(["python", "-m", "eval_gpt_4o",
-                            "--input", f"./datasets/{dataset}.json",
+                            "--input", f"./datasets/{dataset}_test.json",
                             "--inference-prompt", "./templates/inference.txt",
                             "--eval-prompt", "./templates/judge_llm.txt",
                             "--openai-api-key", OPENAI_API_KEY,
