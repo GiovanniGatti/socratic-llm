@@ -122,3 +122,12 @@ class TrainDataset(RootModel):
             e for e in self.root
             if e.chosen_eval.evaluation_error is None and e.rejected_eval.evaluation_error is None
         ]
+
+    def get_eligible_for_training(self) -> List[Example]:
+        return list(
+            filter(
+                lambda e: (e.chosen_eval.summary_score() > 0.8 and
+                           e.chosen_eval.summary_score() > e.rejected_eval.summary_score()),
+                self.get_valid()
+            )
+        )

@@ -29,13 +29,13 @@ if __name__ == "__main__":
 
     tlr_dataset = Dataset.from_dict({
         "prompt": [
-            inference_prompt_template.format(input=i.prompt) for i in dataset.get_valid()
+            inference_prompt_template.format(input=i.prompt) for i in dataset.get_eligible_for_training()
         ],
         "chosen": [
-            i.chosen for i in dataset.get_valid()
+            i.chosen for i in dataset.get_eligible_for_training()
         ],
         "rejected": [
-            i.rejected for i in dataset.get_valid()
+            i.rejected for i in dataset.get_eligible_for_training()
         ]
     })
 
@@ -53,8 +53,8 @@ if __name__ == "__main__":
         per_device_train_batch_size=1,
         gradient_accumulation_steps=4,
         max_grad_norm=0.3,
-        num_train_epochs=3,
-        learning_rate=1e-6,
+        num_train_epochs=2,
+        learning_rate=5e-5,
         save_total_limit=3,
         logging_steps=10,
         output_dir=args.checkpoints_dir,
