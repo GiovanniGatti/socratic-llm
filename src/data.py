@@ -13,6 +13,9 @@ class Dataset(RootModel):
     def __getitem__(self, item):
         return self.root[item]
 
+    def __len__(self) -> int:
+        return len(self.root)
+
 
 class Evaluation(BaseModel):
     questions: str
@@ -50,6 +53,9 @@ class Scores(RootModel):
 
     def __getitem__(self, item):
         return self.root[item]
+
+    def __len__(self) -> int:
+        return len(self.root)
 
     def get_valid(self) -> List[Example]:
         return [e for e in self.root if e.evaluation_error is None]
@@ -116,6 +122,9 @@ class TrainDataset(RootModel):
 
     def __getitem__(self, item):
         return self.root[item]
+
+    def __len__(self) -> int:
+        return len(self.root)
 
     def get_valid(self) -> List[Example]:
         return [
