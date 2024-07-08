@@ -52,7 +52,7 @@ if __name__ == "__main__":
         )
         encoded_inputs = tokenizer([formatted, ], return_tensors="pt").to("cuda")
 
-        generate_kwargs = dict(encoded_inputs, max_new_tokens=250, do_sample=True, temperature=1.2)
+        generate_kwargs = dict(encoded_inputs, max_new_tokens=400, do_sample=True, temperature=1.2)
 
         collected = []
         for _ in range(5):
