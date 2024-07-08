@@ -35,7 +35,7 @@ if __name__ == "__main__":
             i.chosen for i in dataset.get_valid()
         ],
         "rejected": [
-            i.chosen for i in dataset.get_valid()
+            i.rejected for i in dataset.get_valid()
         ]
     })
 
