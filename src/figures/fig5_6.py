@@ -63,6 +63,7 @@ if __name__ == "__main__":
     source = ColumnDataSource(data=data)
 
     fig5 = figure(x_range=datasets, y_range=(.0, 1.1), toolbar_location=None, tools="", height=550, width=600)
+    fig5.output_backend = "svg"
 
     fig5.vbar(x=dodge("datasets", -0.25, range=fig5.x_range), top="finetuned", source=source,
               width=0.2, color=FINETUNED, legend_label="Finetuned")
