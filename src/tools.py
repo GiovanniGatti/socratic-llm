@@ -1,6 +1,11 @@
+import abc
+import argparse
 import re
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Dict, List
 
+import httpx
+import openai
+from ollama import Client, ResponseError
 from openai import OpenAI
 from pydantic import ValidationError
 from pydantic_core import from_json
@@ -40,23 +45,124 @@ def escape_template(str_template: str) -> (str, set[str]):
     return final_template
 
 
-def safe_eval(client: OpenAI, content: str, max_retry: int = 3) -> Tuple[str, Optional[str], Optional[Evaluation]]:
-    """
-    Performs a call to gpt-4o and parses its assessments. Errors are managed to avoid failures.
+class ClientLLM(abc.ABC):
 
-    :param client: the OpenAI client
+    @abc.abstractmethod
+    def chat(
+            self, messages: List[Dict[str, str]], temperature: float = 0.2, seed: Optional[int] = 0
+    ) -> str:
+        ...
+
+    @abc.abstractmethod
+    def healthcheck(self) -> None:
+        """
+        :raises: ValueError if the Client cannot connect to provider or model is not available
+        """
+        pass
+
+
+class OpenAIClient(ClientLLM):
+
+    def __init__(self, openai_api_key: str, model: str):
+        self._model = model
+        self._client = OpenAI(api_key=openai_api_key)
+
+    def chat(
+            self, messages: List[Dict[str, str]], temperature: float = 0.2, seed: Optional[int] = 0
+    ) -> str:
+        chat_completion = self._client.chat.completions.create(
+            messages=messages,
+            model=self._model,
+            temperature=temperature,
+            seed=seed
+        )
+        return chat_completion.choices[0].message.content
+
+    def healthcheck(self) -> None:
+        try:
+            models = self._client.models.list()
+        except openai.AuthenticationError as e:
+            raise ValueError("Unable to authenticate at OpenAI. Check if key is valid.", e)
+
+        available_models = [m.id for m in models]
+        if self._model not in available_models:
+            raise ValueError(f"Invalid model. Expected one of {available_models}")
+
+
+class OllamaClient(ClientLLM):
+
+    def __init__(self, ollama_address: str, model: str):
+        self._client = Client(host=ollama_address)
+        self._model = model
+
+    def chat(self, messages: List[Dict[str, str]], temperature: float = 0.2, seed: Optional[int] = 0) -> str:
+        chat_completion = self._client.chat(
+            messages=messages,
+            model=self._model,
+            options=dict(
+                temperature=temperature,
+                seed=seed,
+            )
+        )
+        return chat_completion["message"]["content"]
+
+    def healthcheck(self) -> None:
+        try:
+            models = self._client.list()
+        except httpx.ConnectError as e:
+            raise ValueError("Unable to connect to Ollama server. Check server's address.", e)
+
+        available_models = [m["name"] for m in models["models"]]
+
+        if self._model not in available_models:
+            try:
+                print(f" === Pulling {self._model} from OllamaHub === ")
+                self._client.pull(self._model)
+            except ResponseError as e:
+                raise ValueError("Model is unavailable. Unable to pull it.", e)
+
+
+class JudgeLLM(argparse.Action):
+
+    def __call__(
+            self,
+            parser: argparse.ArgumentParser,
+            namespace: argparse.Namespace,
+            values: List[str],
+            option_string: List[str] = None
+    ) -> None:
+        if len(values) != 3:
+            raise ValueError(f"Expected the model provider, the provider's information access, "
+                             f"and the model name to use, but found {values}")
+
+        provider, access_info, model = values
+
+        if provider not in ("openai", "ollama"):
+            raise ValueError(f"Only \"openai\" or \"ollama\" are the accepted providers. Found {provider}")
+
+        client_llm: ClientLLM
+        if provider == "ollama":
+            client_llm = OllamaClient(ollama_address=access_info, model=model)
+        else:
+            client_llm = OpenAIClient(openai_api_key=access_info, model=model)
+
+        client_llm.healthcheck()
+
+        setattr(namespace, self.dest, client_llm)
+
+
+def safe_eval(client: ClientLLM, content: str, max_retry: int = 3) -> Tuple[str, Optional[str], Optional[Evaluation]]:
+    """
+    Performs a call to the LLM and parses its assessments. Errors are managed to avoid failures.
+
+    :param client: the client LLM
     :param content: the eval raw message
     :param max_retry: max number of retries to fix the input
-    :return: A tuple containing GPT-4o raw message, the error message (if applicable) and the evaluation result (if
+    :return: A tuple containing the LLM's raw message, the error message (if applicable) and the evaluation result (if
     parsing successful)
     """
-    chat_completion = client.chat.completions.create(
-        messages=[{"role": "user", "content": content}, ],
-        model="gpt-4o",
-        temperature=0.2,
-        seed=0
-    )
-    content = chat_completion.choices[0].message.content
+
+    content = client.chat([{"role": "user", "content": content}, ])
 
     i = 0
     error: Optional[Exception] = None

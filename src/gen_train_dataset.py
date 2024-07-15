@@ -4,45 +4,41 @@ import pathlib
 from typing import List
 
 import torch
-from openai import OpenAI
 from tqdm import tqdm
 from tqdm.contrib import tzip
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
 from data import Dataset, TrainDataset, DPOExample, DPOEvaluation
-from tools import escape_template, safe_eval
+from tools import escape_template, safe_eval, JudgeLLM, ClientLLM
 
-if __name__ == "__main__":
-    parser = argparse.ArgumentParser(prog="GEN-TRAIN-DATASET")
 
-    parser.add_argument("--input", required=True, type=pathlib.Path, help="Path to seed dataset")
-    parser.add_argument("--inference-prompt", required=True, type=pathlib.Path, help="Path to the inference prompt")
-    parser.add_argument("--eval-prompt", required=True, type=pathlib.Path, help="Path to the judge evaluation prompt")
-    parser.add_argument("--instruct-model", required=True, type=str, help="HF path to instruct model")
-    parser.add_argument("--openai-api-key", required=True, type=str, help="Open AI api key")
-    parser.add_argument("--output", required=True, type=pathlib.Path, help="Path where to store training dataset")
-
-    args = parser.parse_args()
-
+def main(
+        dataset: pathlib.Path,
+        inference_prompt: pathlib.Path,
+        eval_prompt: pathlib.Path,
+        instruct_model: str,
+        judge_llm: ClientLLM,
+        output_path: pathlib.Path
+) -> None:
     torch.manual_seed(0)
 
-    with open(args.eval_prompt, "r", encoding="utf-8") as file:
+    with open(eval_prompt, "r", encoding="utf-8") as file:
         judge_llm_prompt = escape_template(file.read())
 
-    with open(args.inference_prompt, "r", encoding="utf-8") as file:
+    with open(inference_prompt, "r", encoding="utf-8") as file:
         inference_prompt_template = escape_template(file.read())
 
-    with open(args.input) as f:
+    with open(dataset) as f:
         eval_prompts = Dataset.model_validate_json(f.read())
 
     model = AutoModelForCausalLM.from_pretrained(
-        args.instruct_model,
+        instruct_model,
         torch_dtype=torch.float16,
         trust_remote_code=True,
         device_map="cuda",
     )
 
-    tokenizer = AutoTokenizer.from_pretrained(args.instruct_model, trust_remote_code=True)
+    tokenizer = AutoTokenizer.from_pretrained(instruct_model, trust_remote_code=True)
 
     answers: List[List[str]] = []
     for prompt in tqdm(eval_prompts):
@@ -62,7 +58,7 @@ if __name__ == "__main__":
 
         answers.append(collected)
 
-    client = OpenAI(api_key=args.openai_api_key)
+    client = judge_llm
     train_dataset = TrainDataset()
     for prompt, collected in tzip(eval_prompts, answers):
 
@@ -90,7 +86,32 @@ if __name__ == "__main__":
             DPOExample(prompt=prompt, chosen_eval=chosen, rejected_eval=rejected, all_evaluations=dpo_evaluations)
         )
 
-    with open(args.output, "w") as f:
+    with open(output_path, "w") as f:
         f.write(train_dataset.model_dump_json(indent=2))
 
-    os.chmod(args.output, 0o755)
+    os.chmod(output_path, 0o755)
+
+
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="GEN-TRAIN-DATASET",
+        description="Generate the DPO training. First, using the instruct model, it creates several interactions."
+                    "Then, it ranks these interactions using the JudgeLLM.",
+    )
+
+    parser.add_argument("--input", required=True, type=pathlib.Path, help="Path to seed dataset")
+    parser.add_argument("--inference-prompt", required=True, type=pathlib.Path, help="Path to the inference prompt")
+    parser.add_argument("--eval-prompt", required=True, type=pathlib.Path, help="Path to the judge evaluation prompt")
+    parser.add_argument("--instruct-model", required=True, type=str, help="HF path to instruct model")
+    parser.add_argument(
+        "--judge-llm", required=True, nargs=3, action=JudgeLLM,
+        help="Service to use of the judge LLM. It can be either a self-hosted model (Ollama) or OpenAI."
+             " This argument expects 3 parameters. The service to use: openai or ollama. The access "
+             "information: if openai, thus the OpenAi API key or if using ollama, the server's http "
+             "address. The last parameter is the model to use (e.g., gpt-4o or llama3:70b-instruct)."
+    )
+    parser.add_argument("--output", required=True, type=pathlib.Path, help="Path where to store training dataset")
+
+    args = parser.parse_args()
+
+    main(args.input, args.inference_prompt, args.eval_prompt, args.intruct_model, args.judge_llm, args.output)

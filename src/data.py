@@ -140,3 +140,26 @@ class TrainDataset(RootModel):
                 self.get_valid()
             )
         )
+
+
+class CrossValidation(BaseModel):
+    prompt: str
+    output: str
+    human: Evaluation
+    gpt4o: Optional[Evaluation]
+
+
+class CrossValidationDataset(RootModel):
+    root: List[CrossValidation] = []
+
+    def __iter__(self):
+        return iter(self.root)
+
+    def __getitem__(self, item):
+        return self.root[item]
+
+    def __len__(self) -> int:
+        return len(self.root)
+
+    def get_valid(self) -> List[CrossValidation]:
+        return [e for e in self.root if e.gpt4o is not None]
