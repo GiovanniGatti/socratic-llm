@@ -1,3 +1,7 @@
+<div align="center">
+    <img alt="ollama" height="250px" src="./resources/banner.png">
+</div>
+
 # Socratic LLM
 
 Using Large Language Models (LLMs) in education presents unique challenges. Typically, LLMs are designed to provide
@@ -52,7 +56,6 @@ ollama run eurecom-ds/phi-3-mini-4k-socratic:Q4_0
 ```
 
 Check out more about Ollama [here](https://github.com/ollama/ollama).
-
 
 https://github.com/user-attachments/assets/5e7f4b66-332c-48a5-b110-6f5b1a219f39
 
