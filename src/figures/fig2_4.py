@@ -7,7 +7,7 @@ import scipy
 from bokeh.io import export_svg, curdoc
 from bokeh.models import ColumnDataSource, LabelSet
 from bokeh.plotting import figure
-from bokeh.transform import dodge
+from bokeh.transform import jitter, dodge
 from pydantic import BaseModel
 
 from data import Scores, Evaluation, Example, CrossValidationDataset
@@ -74,12 +74,14 @@ def main(cross_validation_dataset_path: pathlib.Path, output_dir: pathlib.Path) 
 
     source = ColumnDataSource(data)
 
-    fig3 = figure(width=600, height=600, y_range=(-0.05, 1.05), x_range=(-0.05, 1.05),
+    fig3 = figure(width=300, height=300, y_range=(-0.05, 1.05), x_range=(-0.05, 1.05),
                   title=f"Pearson correlation={pearson:.2f}",
                   x_axis_label="GPT-4o Score", y_axis_label="Human score")
     fig3.output_backend = "svg"
+    fig3.xaxis.minor_tick_line_color = None
+    fig3.yaxis.minor_tick_line_color = None
 
-    fig3.scatter(x="gpt-4o", y="humans", size=8, alpha=0.8, source=source)
+    fig3.scatter(x=jitter("gpt-4o", 0.03), y=jitter("humans", 0.03), size=6, alpha=0.5, source=source)
 
     filename = f"{output_dir}/fig3.svg"
     export_svg(fig3, filename=filename)
@@ -110,7 +112,7 @@ def main(cross_validation_dataset_path: pathlib.Path, output_dir: pathlib.Path) 
 
     source = ColumnDataSource(data=data)
 
-    fig4 = figure(x_range=score_components, y_range=(0, 1.1), height=550, width=600, toolbar_location=None, tools="",
+    fig4 = figure(x_range=score_components, y_range=(0, 1.), height=320, width=600, toolbar_location=None, tools="",
                   y_axis_label="Summary score")
     fig4.output_backend = "svg"
 

@@ -49,7 +49,7 @@ if __name__ == "__main__":
     EVAL_PROMPT = pathlib.Path("./templates/judge_llm.txt")
 
     print(" ====== Generating DPO training datasets ====== ")
-    for dataset in ("mathdial", "tutorchat"):
+    for dataset in ("mathdial", "tutorchat", "debugging"):
         target_dir = dpo_dir / dataset
         target_dir.mkdir(exist_ok=True)
         if not (target_dir / "train_dataset.json").exists():
@@ -61,7 +61,7 @@ if __name__ == "__main__":
                                    output_path=pathlib.Path(f"{target_dir}/train_dataset.json"))
 
     print(" ====== Finetuning model with DPO ====== ")
-    for dataset in ("mathdial", "tutorchat"):
+    for dataset in ("mathdial", "tutorchat", "debugging"):
         target_dir = dpo_dir / dataset
         target_dir.mkdir(exist_ok=True)
 
@@ -89,6 +89,7 @@ if __name__ == "__main__":
         dataset_path = pathlib.Path(f"./datasets/{dataset}_test.json")
         from_finetuned_with_tutorchat = target_dir / "from_finetuned_with_tutorchat.json"
         from_finetuned_with_mathdial = target_dir / "from_finetuned_with_mathdial.json"
+        from_finetuned_with_debugging = target_dir / "from_finetuned_with_debugging.json"
         base = target_dir / "base.json"
         gpt4o = target_dir / "gpt4o.json"
 
@@ -107,6 +108,14 @@ if __name__ == "__main__":
                             model_path=dpo_dir / "mathdial" / "model",
                             judge_llm=args.judge_llm,
                             output_path=from_finetuned_with_mathdial)
+
+        if not from_finetuned_with_debugging.exists():
+            eval_model.main(dataset=dataset_path,
+                            inference_prompt=INFERENCE_PROMPT,
+                            eval_prompt=EVAL_PROMPT,
+                            model_path=dpo_dir / "debugging" / "model",
+                            judge_llm=args.judge_llm,
+                            output_path=from_finetuned_with_debugging)
 
         if not base.exists():
             eval_model.main(dataset=dataset_path,
@@ -149,8 +158,11 @@ if __name__ == "__main__":
 
     table.main(mathdial_finetuned_with_tutorchat=evaluation_dir / "mathdial" / "from_finetuned_with_tutorchat.json",
                mathdial_finetuned_with_mathdial=evaluation_dir / "mathdial" / "from_finetuned_with_mathdial.json",
+               mathdial_finetuned_with_debugging=evaluation_dir / "mathdial" / "from_finetuned_with_debugging.json",
                debugging_finetuned_with_tutorchat=evaluation_dir / "debugging" / "from_finetuned_with_tutorchat.json",
                debugging_finetuned_with_mathdial=evaluation_dir / "debugging" / "from_finetuned_with_mathdial.json",
+               debugging_finetuned_with_debugging=evaluation_dir / "debugging" / "from_finetuned_with_debugging.json",
                tutorchat_finetuned_with_tutorchat=evaluation_dir / "tutorchat" / "from_finetuned_with_tutorchat.json",
                tutorchat_finetuned_with_mathdial=evaluation_dir / "tutorchat" / "from_finetuned_with_mathdial.json",
+               tutorchat_finetuned_with_debugging=evaluation_dir / "tutorchat" / "from_finetuned_with_debugging.json",
                output_dir=figures_dir)

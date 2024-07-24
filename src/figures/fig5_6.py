@@ -57,7 +57,7 @@ def main(
 
     source = ColumnDataSource(data=data)
 
-    fig5 = figure(height=550, width=600, x_range=datasets, y_range=(.0, 1.1), toolbar_location=None, tools="",
+    fig5 = figure(height=320, width=600, x_range=datasets, y_range=(.0, 1.07), toolbar_location=None, tools="",
                   y_axis_label="Summary score")
     fig5.output_backend = "svg"
 
@@ -105,7 +105,7 @@ def main(
 
     source = ColumnDataSource(data=data)
 
-    fig6 = figure(height=550, width=600, x_range=datasets, y_range=(0, 1.1), toolbar_location=None, tools="",
+    fig6 = figure(height=320, width=600, x_range=datasets, y_range=(0, 1.07), toolbar_location=None, tools="",
                   y_axis_label="Normalized score")
     fig6.output_backend = "svg"
 
