@@ -30,7 +30,7 @@ github_username:  GiovanniGatti
 
 # Build settings
 markdown: kramdown
-theme: pages-themes/tactile@v0.2.0
+remote_theme: pages-themes/tactile@v0.2.0
 plugins:
   - jekyll-feed
   - jekyll-remote-theme
