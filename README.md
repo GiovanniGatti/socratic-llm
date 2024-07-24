@@ -53,8 +53,8 @@ ollama run eurecom-ds/phi-3-mini-4k-socratic:Q4_0
 
 Check out more about Ollama [here](https://github.com/ollama/ollama).
 
-![](./resources/ollama-demo.mp4)
 
+https://github.com/user-attachments/assets/5e7f4b66-332c-48a5-b110-6f5b1a219f39
 
 # Scripts
 
