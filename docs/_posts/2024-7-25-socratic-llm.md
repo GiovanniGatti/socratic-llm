@@ -28,8 +28,8 @@ We ask a GPT-4o (i.e., LLM-as-a-judge) to evaluate interactions according to the
 
 To validate GPT-4o assessments, we compare them to those of human annotators for a set of 100 examples. We found a strong Pearson correlation ($$p=0.78$$) and aligned choices for the four components between GPT-4os and those of human annotators.
 
-![_config.yml]({{ site.baseurl }}/images/human-vs-GPT-4o.svg)
-![_config.yml]({{ site.baseurl }}/images/humans-vs-GPT-4o-breakdown.svg)
+![_config.yml]({{ site.baseurl }}/images/human-vs-GPT-4o.svg){:height: 270px;vertical-align: middle;}
+![_config.yml]({{ site.baseurl }}/images/humans-vs-GPT-4o-breakdown.svg){:width: 430px;vertical-align: middle;}
 
 ## Training Pipeline
 
@@ -47,7 +47,7 @@ We follow the procedure illustrated below.
 
 ![_config.yml]({{ site.baseurl }}/images/training-pipeline.svg)
 
-## Results \& Analysis
+## Results & Analysis
 
 We fine-tuned three models over three different datasets ([Debugging](https://arxiv.org/abs/2403.00199), [MathDial](https://arxiv.org/abs/2305.14536), and [TutorChat](https://arxiv.org/abs/2402.11111)). All these three datasets were designed to contain examples of high-quality Socratic interactions.
 
