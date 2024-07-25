@@ -11,7 +11,7 @@ title: Fine Tuning a Large Language Model for Socratic Interactions
 Large Language Models (LLMs) have shown outstanding ability in questioning-answering tasks. Yet, plain answers may not be the preferred outcome for education. Effective educators seek to encourage students to discover the answers to their questions by their means.
 We inspire our work from the Socratic Method famously showcased in Plato's Republic. Here, Socrates questions Cephalus about the meaning of justice. When Cephalus defines justice as telling the truth and repaying debts, Socrates counters with a scenario that tests this idea, prompting Cephalus to review his definition.
 
-We are fine-tuning LLMs to act more like Socratic tutors. Instead of just giving plain answers, our models ask probing questions to encourage students to think critically and deepen their understanding of the selected topic. For example, instead of providing the solution to $x^2−4=0$, the model prompts the student to factor the equation and find the values of  $x$ that solve it.
+We are fine-tuning LLMs to act more like Socratic tutors. Instead of just giving plain answers, our models ask probing questions to encourage students to think critically and deepen their understanding of the selected topic. For example, instead of providing the solution to $$x^2−4=0$$, the model prompts the student to factor the equation and find the values of  $$x$$ that solve it.
 
 We use Direct Preference Optimization (DPO) to instruct LLMs to follow the Socratic Method. DPO is a widely used technique for aligning LLMs to human preferences. We generate diverse datasets and train the LLM to judge and rank answers based on their educational value. Our fine-tuned models perform much better than the originals, increasing their educational value.
 
@@ -26,7 +26,7 @@ Defining the "socrativeness" of interactions is challenging. Therefore, we break
 
 We ask a GPT-4o (i.e., LLM-as-a-judge) to evaluate interactions according to these four characteristics (check out the prompt [here](https://github.com/GiovanniGatti/socratic-llm/blob/main/templates/judge_llm.txt)). These four aspects are then uniformly weighed and normalized into a numerical *summary score*, ranging from zero to one.
 
-To validate GPT-4o assessments, we compare them to those of human annotators for a set of 100 examples. We found a strong Pearson correlation ($p=0.78$) and aligned choices for the four components between GPT-4os and those of human annotators.
+To validate GPT-4o assessments, we compare them to those of human annotators for a set of 100 examples. We found a strong Pearson correlation ($$p=0.78$$) and aligned choices for the four components between GPT-4os and those of human annotators.
 
 ![_config.yml]({{ site.baseurl }}/images/human-vs-GPT-4o.svg)
 ![_config.yml]({{ site.baseurl }}/images/humans-vs-GPT-4o-breakdown.svg)
@@ -39,7 +39,7 @@ As a choice of model, we fine-tune Phi-3-Mini-4k-Instruct, one of the small-size
 
 We follow the procedure illustrated below.
 
- - We generate with $\pi_{SFT}$ five candidate answers (Answer A to Answer E) for each input using this [prompt](https://github.com/GiovanniGatti/socratic-llm/blob/main/templates/inference.txt);
+ - We generate with five candidate answers (Answer A to Answer E) for each input using this [prompt](https://github.com/GiovanniGatti/socratic-llm/blob/main/templates/inference.txt);
  - We use GPT-4o as a judge to assess the adherence of interactions to the Socratic method based on four criteria;
  - For each example, we extract a final summarized score ranging from zero to one, where one is the best outcome;
  - We select the best example (highest score) to be the accepted answer and the worst example (lowest score) as the rejected answer;
