@@ -54,15 +54,15 @@ We fine-tuned three models over three different datasets ([Debugging](https://ar
 We observe that the model trained on TutorChat is the most
 performing, yielding good performance on all three datasets. Notably, the TutorChat-trained model surpasses the models trained on MathDial and Debugging when evaluated on their respective test sets, albeit by a small margin. Such an effect is likely due to the preference dataset of TutorChat, which indicates a higher data diversity than the MathDial and Debugging datasets.
 
-![_config.yml]({{ site.baseurl }}/images/table.png)
+![_config.yml]({{ site.baseurl }}/images/table.png){:style="width: 430px; display:block; margin-left: auto; margin-right: auto;"}
 
 Below, we present the mean summary scores over the 100 samples for the TutorChat fine-tuned model and the base model using only prompt engineering. We add GPT-4o's performance with only prompt engineering to provide a reference of the best possible performance with prompt engineering-only strategies. The fine-tuned model improved significantly over the base model, reaching close performance to a much larger and more powerful GPT-4o in all datasets.
 
-![_config.yml]({{ site.baseurl }}/images/perf-across-datasets.svg)
+![_config.yml]({{ site.baseurl }}/images/perf-across-datasets.svg){:style="width: 430px; display:block; margin-left: auto; margin-right: auto;"}
 
 The TutorChat-trained model (our best model) showed significant gains in three key areas and now performs almost as well as GPT-4o. This also shows the model's strong generalization ability, as it was trained on TutorChat data but excelled on the different MathDial datasets.
 
-![_config.yml]({{ site.baseurl }}/images/performance-breakdown.svg)
+![_config.yml]({{ site.baseurl }}/images/performance-breakdown.svg){:style="width: 430px; display:block; margin-left: auto; margin-right: auto;"}
 
 It also showed significant gains in three areas, nearing GPT-4o performance, and demonstrated strong generalization by excelling on a dataset different from its training data.
 
