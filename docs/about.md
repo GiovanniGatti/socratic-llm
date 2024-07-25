@@ -4,12 +4,8 @@ title: About
 permalink: /about/
 ---
 
-Some information about you!
+This project is developed and maintained by EURECOM Sophia-Antipolis.
 
-### More Information
-
-A place to include any other types of information that you'd like to include about yourself.
-
-### Contact me
-
-[email@domain.com](mailto:email@domain.com)
+EURECOM is a French Graduate school and a research center in digital sciences founded in 1991. It is part of the
+Institut Mines-Télécom and is a founding member of the SophiaTech Campus in Sophia Antipolis, the largest Science and
+Technology Information campus in the Alpes-Maritimes.
