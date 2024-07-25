@@ -1,5 +1,5 @@
 ---
-layout: post
+layout: page
 title: Fine Tuning a Large Language Model for Socratic Interactions
 ---
 
