@@ -17,7 +17,7 @@ advanced models like GPT-4o for evaluation, our results show that DPO successful
 dialogue, enhancing their educational value.
 
 This repository contains the source material for the paper "Fine Tuning a Large Language Model for Socratic
-Interactions" (accepted at KKD-2024).
+Interactions" (KKD-2024, AI4EDU Workshop).
 
 # Model inference
 
