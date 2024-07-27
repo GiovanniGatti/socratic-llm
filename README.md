@@ -112,3 +112,20 @@ Then run it with (tip: don't forget to mount the GPU and script's input/output d
 ```bash
 $ docker run --rm --gpus all -v socratic-llm/:/socractic-llm -v /home/<user>/huggingface:/huggingface -e HF_HOME=/huggingface -it socratic-llm -m pipeline --judge-llm openai <open-ai-key> gpt-4o --output-dir /socractic-llm --instruct-model microsoft/Phi-3-mini-4k-instruct
 ```
+
+# Cite this work
+
+```
+@inproceedings{"bonino2024socratic",
+  title        = {Fine Tuning a Large Language Model for Socratic Interactions},
+  author       = {Giulia Bonino and Gabriele Sanmartino and Giovanni Gatti Pinheiro and Paolo Papotti and Raphael Troncy and Pietro Michiardi},
+  year         = 2024,
+  month        = {August},
+  booktitle    = {Proceedings of the Workshop On
+AI For Eeducation (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
+  publisher    = {ACM Press},
+  address      = {Barcelona},
+  organization = {ACM}
+}
+```
+
