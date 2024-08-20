@@ -28,7 +28,7 @@ footer-links:
   rss: # just type anything here for a working RSS icon
   twitter:
   stackoverflow: # your stackoverflow profile, e.g. "users/50476/bart-kiers"
-  youtube: # channel/<your_long_string> or user/<user-name>
+  youtube: https://www.youtube.com/watch?v=Phh4PhZOIE0
   googleplus: # anything in your profile username that comes after plus.google.com/
   huggingface: eurecom-ds/Phi-3-mini-4k-socratic
   ollama: eurecom-ds/phi-3-mini-4k-socratic
