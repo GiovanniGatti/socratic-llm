@@ -66,6 +66,33 @@ Check out more about Ollama [here](https://github.com/ollama/ollama).
 
 https://github.com/user-attachments/assets/5e7f4b66-332c-48a5-b110-6f5b1a219f39
 
+# Chatbot
+
+## Running a chatbot
+
+You can interact with the model using a chatbot application powered with Gradio by running a Docker container.
+
+```bash
+docker run --rm --gpus all -p 2121:2121 -v /home/<user>/huggingface/:/huggingface -e HF_HOME=/huggingface -it eurecomds/phi-3-mini-4k-socratic
+```
+
+You can specify which port the chatbot application starts with `--server-port <port number>` (default 2121), or load the
+model with 4-bit quantization by adding `--load-in-4bit` to the end of the above command line.
+
+## Building your own chatbot
+
+Our model was trained to follow the Socratic method over multiple interactions. However, you need to provide a chat history to its inputs. Thus, we advise prefixing student's and professor's by role and to present them in a linear path to the model. For example, the chat history below can be used as the model's input.
+
+```text
+Student: What can stop a fire?
+Professor: Can you think of different methods or substances that might be effective in stopping a fire?
+Student: I could use water
+Professor: Water extinguishes fire due to its cooling effect and its ability to remove heat. Can you think about how the heat absorption by water might affect the fire triangle, which consists of heat, fuel, and oxygen? And considering your answer, what other methods could be effective in different scenarios?
+Student: Maybe using a carbon dioxide for removing oxygen?
+```
+
+For more details, check out how we built our chatbot at [socratic_ui.py](./chatbot/socratic_ui.py).
+
 # Scripts
 
 We also make available evaluation scripts.
