@@ -9,7 +9,7 @@
 [![Static Badge](https://img.shields.io/badge/Read%20-%20%40GitHub%20Pages%20-blue?style=flat&logoColor=white&logo=readme)](https://giovannigatti.github.io/socratic-llm/)
 [![Static Badge](https://img.shields.io/badge/Watch%20-%20%40%20Youtube%20-blue?style=flat&logo=youtube)](https://www.youtube.com/watch?v=Phh4PhZOIE0)
 [![Static Badge](https://img.shields.io/badge/ChatBot-%40%20Dockerhub-blue?style=flat&logo=docker&logoColor=white
-)](https://hub.docker.com/repository/docker/eurecomds/phi-3-mini-4k-socratic/general)
+)](https://hub.docker.com/r/eurecomds/phi-3-mini-4k-socratic)
 
 Using Large Language Models (LLMs) in education presents unique challenges. Typically, LLMs are designed to provide
 direct answers to questions, which can hinder students' critical thinking and self-discovery skills. To address this, we
