@@ -75,4 +75,6 @@ Fine-tuning Large Language Models (LLMs) with Direct Preference Optimization enh
 
 Future work will focus on using more powerful models and refining our metric system by adding more evaluation aspects. Larger models could improve the accuracy and effectiveness of Socratic dialogues, creating even more robust educational tools.
 
-And do not forget to try out our model at [HuggingFace](https://huggingface.co/eurecom-ds/Phi-3-mini-4k-socratic) or [Ollama](https://ollama.com/eurecom-ds/phi-3-mini-4k-socratic)!
+Lastly, we disclose that this work is only a part of a larger educational project. At EURECOM, we are developing chatbots to help students with learning activities. Our chatbots can address the students' questions while searching through educational content from our institution (such as textbooks, slides, and lecture handouts). You can experiment chatting with [EULER](https://euler.eurecom.fr/).
+
+And do not forget to try out our Socratic model at [HuggingFace](https://huggingface.co/eurecom-ds/Phi-3-mini-4k-socratic) or [Ollama](https://ollama.com/eurecom-ds/phi-3-mini-4k-socratic)!
