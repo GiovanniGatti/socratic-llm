@@ -1,4 +1,4 @@
-FROM python:3.11-buster as builder
+FROM python:3.11-buster AS builder
 
 WORKDIR /app
 
@@ -10,7 +10,7 @@ RUN --mount=type=cache,target=/root/.cache/pip \
     pip install -r requirements.txt
 
 
-FROM python:3.11-slim-buster as runtime
+FROM python:3.11-slim-buster AS runtime
 
 RUN apt update && apt upgrade -y
 
@@ -26,6 +26,3 @@ COPY --from=builder ${VIRTUAL_ENV} ${VIRTUAL_ENV}
 COPY socratic_ui.py .
 
 ENTRYPOINT ["python", "socratic_ui.py"]
-
-# docker build -t socratic-ui .
-# docker run --rm --gpus '"device=6"' -p 2121:2121 -v /home/euler/huggingface/:/huggingface -e HF_HOME=/huggingface -it socratic-ui
