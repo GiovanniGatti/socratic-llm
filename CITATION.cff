@@ -22,7 +22,7 @@ version: 0.1.0
 date-released: 2024-08-26
 url: "https://github.com/GiovanniGatti/socratic-llm/"
 preferred-citation:
-  type: conference-paper
+  type: conference
   authors:
     - family-names: "Bonino"
       given-names: "Giulia"
