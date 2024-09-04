@@ -22,6 +22,11 @@ dialogue, enhancing their educational value.
 This repository contains the source material for the paper "Fine Tuning a Large Language Model for Socratic
 Interactions" (KKD-2024, AI4EDU Workshop).
 
+Finally, this project is just one piece of a broader educational initiative. At EURECOM, we are crafting chatbots
+designed to support students in their learning journeys. These chatbots can answer student inquiries by navigating
+through a wealth of educational resources from our institution, including textbooks, slides, and lecture notes. Curious
+to see it in action? Try chatting with [EULER](https://euler.eurecom.fr/) and experience it yourself!
+
 # Model inference
 
 ## HuggingFace
@@ -42,7 +47,10 @@ model = AutoModelForCausalLM.from_pretrained(
 tokenizer = AutoTokenizer.from_pretrained("eurecom-ds/Phi-3-mini-4k-socratic", trust_remote_code=True)
 ```
 
-Check out for more details at [Phi-3-mini-4k-socratic](https://huggingface.co/eurecom-ds/Phi-3-mini-4k-socratic).
+> [!TIP]
+> When using the `transformers` library, you need to apply the chat template available
+> at [inference.txt](./templates/inference.txt). Check out for more details
+> at [Phi-3-mini-4k-socratic](https://huggingface.co/eurecom-ds/Phi-3-mini-4k-socratic).
 
 ## Ollama
 
@@ -66,6 +74,26 @@ Check out more about Ollama [here](https://github.com/ollama/ollama).
 
 https://github.com/user-attachments/assets/5e7f4b66-332c-48a5-b110-6f5b1a219f39
 
+> [!TIP]
+> The model's inference template is already managed by Ollama service (check
+> it [here](https://ollama.com/eurecom-ds/phi-3-mini-4k-socratic/blobs/8e567c28dec7)). Thus, you can query the model
+> directly:
+> ```python
+> from ollama import Client
+>
+> client = Client(host="http://address-to-your-ollama-server:port")
+> client.pull("eurecom-ds/phi-3-mini-4k-socratic")
+>
+> user_query = f"Student: How can I stop fire?"
+> response = client.chat(model="eurecom-ds/phi-3-mini-4k-socratic",
+>                        messages=[{'role': 'user', 'content': user_query, }, ])
+> print(print(response['message']['content']))
+> # To address that, let's consider it further. When thinking about stopping 
+> # something like a wildfire or even fires in general - are there mechanisms
+> # at play besides extinguishing them directly with water or foam? What do you
+> # think could be effective strategies to halt the process of combustion itself?
+> ```
+
 # Chatbot
 
 ## Running a chatbot
@@ -81,7 +109,9 @@ model with 4-bit quantization by adding `--load-in-4bit` to the end of the above
 
 ## Building your own chatbot
 
-Our model was trained to follow the Socratic method over multiple interactions. However, you need to provide a chat history to its inputs. Thus, we advise prefixing student's and professor's by role and to present them in a linear path to the model. For example, the chat history below can be used as the model's input.
+Our model was trained to follow the Socratic method over multiple interactions. However, you need to provide a chat
+history to its inputs. Thus, we advise prefixing student's and professor's by role and to present them in a linear path
+to the model. For example, the chat history below can be used as the model's input.
 
 ```text
 Student: What can stop a fire?
