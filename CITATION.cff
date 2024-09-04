@@ -1,0 +1,49 @@
+cff-version: 1.2.0
+message: "When citing this work, use the following metadata. And, thank you!"
+authors:
+- family-names: "Bonino"
+  given-names: "Giulia"
+- family-names: "Sanmartino"
+  given-names: "Gabrielle"
+- family-names: "Gatti Pinheiro"
+  given-names: "Giovanni"
+  orcid: "https://orcid.org/0000-0003-2401-4768"
+- family-names: "Papotti"
+  given-names: "Paolo"
+  orcid: "https://orcid.org/0000-0003-0651-4128"
+- family-names: "Troncy"
+  given-names: "Raphaël"
+  orcid: "https://orcid.org/0000-0003-0457-1436"
+- family-names: "Michiardi"
+  given-names: "Pietro"
+  orcid: "https://orcid.org/0000-0003-4675-7677"
+title: "Socratic LLM"
+version: 0.1.0
+date-released: 2024-08-26
+url: "https://github.com/GiovanniGatti/socratic-llm/"
+preferred-citation:
+  type: conference-paper
+  authors:
+    - family-names: "Bonino"
+      given-names: "Giulia"
+    - family-names: "Sanmartino"
+      given-names: "Gabrielle"
+    - family-names: "Gatti Pinheiro"
+      given-names: "Giovanni"
+      orcid: "https://orcid.org/0000-0003-2401-4768"
+    - family-names: "Papotti"
+      given-names: "Paolo"
+      orcid: "https://orcid.org/0000-0003-0651-4128"
+    - family-names: "Troncy"
+      given-names: "Raphaël"
+      orcid: "https://orcid.org/0000-0003-0457-1436"
+    - family-names: "Michiardi"
+      given-names: "Pietro"
+      orcid: "https://orcid.org/0000-0003-4675-7677"
+  title: "Fine Tuning a Large Language Model for Socratic Interactions"
+  year: 2024
+  month: 8
+  booktitle: "Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)"
+  publisher: "ACM Press"
+  address: "Barcelona"
+  organization: "ACM"
