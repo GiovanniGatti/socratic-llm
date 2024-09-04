@@ -43,7 +43,10 @@ preferred-citation:
   title: "Fine Tuning a Large Language Model for Socratic Interactions"
   year: "2024"
   month: "8"
-  booktitle: "Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)"
-  publisher: "ACM Press"
-  address: "Barcelona"
-  organization: "ACM"
+  conference:
+    name: "Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)"
+    address: "Barcelona"
+  publisher:
+    name: "ACM Press"
+  institution:
+    name: "ACM"
