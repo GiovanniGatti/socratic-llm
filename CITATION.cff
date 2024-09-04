@@ -22,7 +22,7 @@ version: 0.1.0
 date-released: 2024-08-26
 url: "https://github.com/GiovanniGatti/socratic-llm/"
 preferred-citation:
-  type: conference
+  type: conference-paper
   authors:
     - family-names: "Bonino"
       given-names: "Giulia"
@@ -41,9 +41,10 @@ preferred-citation:
       given-names: "Pietro"
       orcid: "https://orcid.org/0000-0003-4675-7677"
   title: "Fine Tuning a Large Language Model for Socratic Interactions"
-  year: 2024
-  month: 8
-  booktitle: "Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)"
-  publisher: "ACM Press"
-  address: "Barcelona"
-  organization: "ACM"
+  year: "2024"
+  month: "8"
+  collection-title: "Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)"
+  publisher:
+    name: "ACM Press"
+    address: "Barcelona"
+  institution: "ACM"
