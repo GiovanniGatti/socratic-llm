@@ -181,7 +181,7 @@ $ docker run --rm --gpus all -v socratic-llm/:/socractic-llm -v /home/<user>/hug
   author       = {Giulia Bonino and Gabriele Sanmartino and Giovanni Gatti Pinheiro and Paolo Papotti and Raphael Troncy and Pietro Michiardi},
   year         = 2024,
   month        = {August},
-  booktitle    = {Proceedings of the Workshop On AI For Eeducation (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
+  booktitle    = {Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
   publisher    = {ACM Press},
   address      = {Barcelona},
   organization = {ACM}
