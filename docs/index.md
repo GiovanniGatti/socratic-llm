@@ -10,6 +10,8 @@ title: Fine Tuning a Large Language Model for Socratic Interactions
 [![Static Badge](https://img.shields.io/badge/Watch%20-%20%40%20Youtube%20-blue?style=flat&logo=youtube)](https://www.youtube.com/watch?v=Phh4PhZOIE0)
 [![Static Badge](https://img.shields.io/badge/ChatBot-%40%20Dockerhub-blue?style=flat&logo=docker&logoColor=white
 )](https://hub.docker.com/r/eurecomds/phi-3-mini-4k-socratic)
+[![Static Badge](https://img.shields.io/badge/Paper-%40%20CEUR-blue?style=flat&logo=arxiv&logoColor=white
+)](https://ceur-ws.org/Vol-3879/AIxEDU2024_paper_26.pdf)
 
 Large Language Models (LLMs) have shown outstanding ability in questioning-answering tasks. Yet, plain answers may not be the preferred outcome for education. Effective educators seek to encourage students to discover the answers to their questions by their means.
 We inspire our work from the Socratic Method famously showcased in Plato's Republic. Here, Socrates questions Cephalus about the meaning of justice. When Cephalus defines justice as telling the truth and repaying debts, Socrates counters with a scenario that tests this idea, prompting Cephalus to review his definition.
