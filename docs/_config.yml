@@ -33,6 +33,7 @@ footer-links:
   huggingface: eurecom-ds/Phi-3-mini-4k-socratic
   ollama: eurecom-ds/phi-3-mini-4k-socratic
   dockerhub: eurecomds/phi-3-mini-4k-socratic
+  arxiv: Vol-3879/AIxEDU2024_paper_26.pdf
 
 
 # Enter your Disqus shortname (not your username) to enable commenting on posts

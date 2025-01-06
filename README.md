@@ -10,6 +10,8 @@
 [![Static Badge](https://img.shields.io/badge/Watch%20-%20%40%20Youtube%20-blue?style=flat&logo=youtube)](https://www.youtube.com/watch?v=Phh4PhZOIE0)
 [![Static Badge](https://img.shields.io/badge/ChatBot-%40%20Dockerhub-blue?style=flat&logo=docker&logoColor=white
 )](https://hub.docker.com/r/eurecomds/phi-3-mini-4k-socratic)
+[![Static Badge](https://img.shields.io/badge/Paper-%40%20CEUR-blue?style=flat&logo=arxiv&logoColor=white
+)](https://ceur-ws.org/Vol-3879/AIxEDU2024_paper_26.pdf)
 
 Using Large Language Models (LLMs) in education presents unique challenges. Typically, LLMs are designed to provide
 direct answers to questions, which can hinder students' critical thinking and self-discovery skills. To address this, we
@@ -19,8 +21,8 @@ We test our approach with diverse datasets, including various educational materi
 advanced models like GPT-4o for evaluation, our results show that DPO successfully fine-tunes LLMs for Socratic
 dialogue, enhancing their educational value.
 
-This repository contains the source material for the paper "Fine Tuning a Large Language Model for Socratic
-Interactions" (KKD-2024, AI4EDU Workshop).
+This repository contains the source material for the paper "EULER: Fine Tuning a Large Language Model for Socratic
+Interactions".
 
 Finally, this project is just one piece of a broader educational initiative. At EURECOM, we are crafting chatbots
 designed to support students in their learning journeys. These chatbots can answer student inquiries by navigating
@@ -177,14 +179,12 @@ $ docker run --rm --gpus all -v socratic-llm/:/socractic-llm -v /home/<user>/hug
 
 ```
 @inproceedings{"bonino2024socratic",
-  title        = {Fine Tuning a Large Language Model for Socratic Interactions},
-  author       = {Giulia Bonino and Gabriele Sanmartino and Giovanni Gatti Pinheiro and Paolo Papotti and Raphael Troncy and Pietro Michiardi},
+  title        = {EULER: Fine Tuning a Large Language Model for Socratic Interactions},
+  author       = {Bonino, Giulia and Sanmartino, Gabriele and Gatti Pinheiro, Giovanni and Papotti, Paolo and Troncy, Raphael and Michiardi, Pietro},
   year         = 2024,
-  month        = {August},
-  booktitle    = {Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)},
-  publisher    = {ACM Press},
-  address      = {Barcelona},
-  organization = {ACM}
+  month        = {November},
+  booktitle    = {Proceedings of the Second International Workshop on Artificial Intelligence Systems in Education co-located with 23rd International Conference of the Italian Association for Artificial Intelligence (AIxIA 2024)},
+  publisher    = {CEUR Workshop Proceedings}
 }
 ```
 
