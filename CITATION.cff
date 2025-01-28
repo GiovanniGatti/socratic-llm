@@ -40,13 +40,13 @@ preferred-citation:
     - family-names: "Michiardi"
       given-names: "Pietro"
       orcid: "https://orcid.org/0000-0003-4675-7677"
-  title: "Fine Tuning a Large Language Model for Socratic Interactions"
+  title: "EULER: Fine Tuning a Large Language Model for Socratic Interactions"
   year: "2024"
-  month: "8"
+  month: "11"
   conference:
-    name: "Proceedings of the Workshop On AI For Education (AI4EDU), in conjunction with the 30th ACM SIGKDD Conference on Knowledge Discovery and Data Mining (KDD)"
-    address: "Barcelona"
+    name: "Proceedings of the Second International Workshop on Artificial Intelligence Systems in Education co-located with 23rd International Conference of the Italian Association for Artificial Intelligence (AIxIA 2024)"
+    address: "Bolzano"
   publisher:
-    name: "ACM Press"
+    name: "CEUR Workshop Proceedings"
   institution:
-    name: "ACM"
+    name: "CEUR"
