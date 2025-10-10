@@ -13,6 +13,10 @@
 [![Static Badge](https://img.shields.io/badge/Paper-%40%20CEUR-blue?style=flat&logo=arxiv&logoColor=white
 )](https://ceur-ws.org/Vol-3879/AIxEDU2024_paper_26.pdf)
 
+> [!TIP]
+> Check out our new project [socratic-bench](https://github.com/GiovanniGatti/socratic-bench)
+> and model [Qwen3:4b finetune](https://huggingface.co/eurecom-ds/qwen3-4b-socratic).
+
 Using Large Language Models (LLMs) in education presents unique challenges. Typically, LLMs are designed to provide
 direct answers to questions, which can hinder students' critical thinking and self-discovery skills. To address this, we
 focus on fine-tuning LLMs to facilitate Socratic interactions. Instead of giving straightforward answers, these models
